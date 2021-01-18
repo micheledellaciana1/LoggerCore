@@ -1,0 +1,15 @@
+Simulate:true
+FBPar1:2
+FBPar2:0
+FBPar3:0
+MinVoltageHeater:0
+MaxVoltageHeater:12
+Autosave:false
+AutosavePath:/Users/Utente/Desktop/AutosaveIcaro
+AutosavePeriodSec:3600
+DelayHeaterAcq:10
+DelayChamberAcq:25
+DefTemperatureRamp:50 600 1 1 true 500
+PATH_LogBook:null
+PATH_defLUT:null
+CSV_DIVIDER: 
