@@ -1,0 +1,22 @@
+Simulate:true
+FBPar1:0.05
+FBPar2:1
+FBPar3:1
+TolleratedErrorDegree:1
+MinCurrentHeater:20
+MaxCurrentHeater:500
+Autosave:false
+AutosavePath:/Users/Utente/Desktop/AutosaveZefiro
+AutosavePeriodSec:3600
+DelaySensorAcq:100
+DelayHeaterAcq:100
+DelayChamberAcq:250
+DefIVChArgs:-10 10 0.1 1 true 500
+DefITChArgs:50 600 1 1 true 500
+DefHeaterCalibArgs:200 200 100 0.003263 -6.6668e-7
+PATH_LogBook:null
+PATH_defLUT:null
+FBPar_SoftwareFollower:1
+MinVoltageDAC:-12
+MaxVoltageDAC:12
+ZeroTimeOnErase:true
