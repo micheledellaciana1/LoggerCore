@@ -1,8 +1,8 @@
 Simulate:true
-FBPar1:0.05
-FBPar2:1
-FBPar3:1
-TolleratedErrorDegree:1
+FBPar1:0.5
+FBPar2:0.05
+FBPar3:0
+TolleratedErrorDegree:0.1
 MinCurrentHeater:20
 MaxCurrentHeater:500
 Autosave:false
@@ -20,3 +20,4 @@ FBPar_SoftwareFollower:1
 MinVoltageDAC:-12
 MaxVoltageDAC:12
 ZeroTimeOnErase:true
+LEDMaxCurrent:500

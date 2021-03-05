@@ -7,7 +7,6 @@ import org.jfree.data.xy.XYSeries;
 import LoggerCore.GlobalVar;
 import LoggerCore.LinkedPointAnalysis;
 import LoggerCore.PointsStream;
-import LoggerCore.themal.FeedBackController_type1;
 import LoggerCore.themal.IFeedbackController;
 
 public class HeaterTemperatureMonitor extends PointsStream {
@@ -51,7 +50,8 @@ public class HeaterTemperatureMonitor extends PointsStream {
     public Point2D acquirePoint() {
         double temperature = _zef.getTemperatureHeater();
         if (Double.isFinite(temperature)) {
-            return new Point2D.Double((System.currentTimeMillis() - GlobalVar.start) * 1e-3, _zef.getTemperatureHeater());
+            return new Point2D.Double((System.currentTimeMillis() - GlobalVar.start) * 1e-3,
+                    _zef.getTemperatureHeater());
         } else {
             return new Point2D.Double((System.currentTimeMillis() - GlobalVar.start) * 1e-3, -1);
         }

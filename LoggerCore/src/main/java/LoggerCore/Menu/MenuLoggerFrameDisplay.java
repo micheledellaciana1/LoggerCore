@@ -8,20 +8,20 @@ import javax.swing.JMenuItem;
 
 import org.apache.jorphan.gui.MenuScroller;
 
-import LoggerCore.LoggerApp;
+import LoggerCore.LoggerFrame;
 
-public class MenuLoggerAppDisplay extends BasicMenu {
+public class MenuLoggerFrameDisplay extends BasicMenu {
 
-    protected LoggerApp _logger;
+    protected LoggerFrame _logger;
 
-    public MenuLoggerAppDisplay(LoggerApp Logger, String name) {
+    public MenuLoggerFrameDisplay(LoggerFrame Logger, String name) {
         super(name);
         _logger = Logger;
         _logAction = false;
     }
 
-    public MenuLoggerAppDisplay BuildDefault() {
-        MenuScroller.setScrollerFor(this, 10);
+    public MenuLoggerFrameDisplay BuildDefault() {
+        MenuScroller.setScrollerFor(this, 20);
 
         removeAll();
         for (int i = 0; i < _logger.getLoadedDataset().getSeriesCount(); i++)

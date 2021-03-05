@@ -1,9 +1,10 @@
-Simulate:true
-FBPar1:2
-FBPar2:0
+Simulate:false
+FBPar1:0.35
+FBPar2:0.004
 FBPar3:0
+TolleratedErrorDegree:1
 MinVoltageHeater:0
-MaxVoltageHeater:12
+MaxVoltageHeater:24
 Autosave:false
 AutosavePath:/Users/Utente/Desktop/AutosaveIcaro
 AutosavePeriodSec:3600

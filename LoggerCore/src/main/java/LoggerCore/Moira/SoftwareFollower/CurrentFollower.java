@@ -12,6 +12,7 @@ public class CurrentFollower extends StoppableRunnable {
     private FeedBackController_type1 _feedbackController;
 
     public CurrentFollower(Moira Moira, FeedBackController_type1 feedbackController, int executionDelay) {
+        _name = "Current Follower";
         _moira = Moira;
 
         _feedbackController = feedbackController;

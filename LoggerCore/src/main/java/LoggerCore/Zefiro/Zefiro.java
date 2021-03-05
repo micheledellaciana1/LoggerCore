@@ -45,7 +45,7 @@ public class Zefiro extends SerialDevice {
 
             @Override
             protected Object executeSimulation(Object arg) {
-                return _voltageSensorDAC + Math.random();
+                return 4 * _voltageSensorDAC + (Math.random() - 0.5);
             }
         });
 
@@ -151,6 +151,18 @@ public class Zefiro extends SerialDevice {
                 _serialBuffer.println("SetcurrentLED");
                 _serialBuffer.println(arg);
 
+                return true;
+            }
+
+            @Override
+            protected Object executeSimulation(Object arg) {
+                try {
+                    _CurrentOutpu2 = Double.valueOf((String) arg);
+                } catch (Exception e) {
+                    if (verbose)
+                        e.printStackTrace();
+                    return false;
+                }
                 return true;
             }
         });

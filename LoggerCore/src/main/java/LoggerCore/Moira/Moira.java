@@ -1,19 +1,28 @@
 package LoggerCore.Moira;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import LoggerCore.Communication.Command;
+import LoggerCore.Communication.StringCommand;
 
 public class Moira extends AnalogDiscovery2 {
 
-    private int _switchDriver;
+    private int _switchGPIO;
 
+    private muxMAX338 _MuxGR;
     private muxMAX338 _MuxPGA;
-    private double[] _CurrentGains;
+    private double[] _CorGains;
     private double _shuntResistor;
+
+    private boolean _offsetCorrection;
+    private double _offsetOpAmpIC2_IC3 = 0;
+    private double _offsetOpAmpIC4 = 0;
 
     private MoiraState _state;
 
     public enum MoiraState {
-        freeRun(0), triggered(1);
+        DirectCoupled(0), LEDCoupled(1);
 
         private int _id;
 
@@ -34,15 +43,127 @@ public class Moira extends AnalogDiscovery2 {
         _state = State;
     }
 
-    public Moira() {
+    public Moira(boolean OffsetCorrection) {
         super();
-
+        _offsetCorrection = OffsetCorrection;
         OverrideCommand("Open", new Command("Open") {
             @Override
             protected Object execute(Object arg) {
                 boolean success = _dwf.FDwfDeviceOpen();
-                digitalWrie(_switchDriver, 1);
+                setOscilloscope(1e-3, 2.5, 2.5);
+
+                if (_offsetCorrection)
+                    InitOffsets();
+
+                success = success && _MuxPGA.selectLine(0);
+                success = success && _MuxGR.selectLine(0);
+                success = success && _MuxGR.disable();
+                success = success && SetSwitch(true);
                 return success;
+            }
+        });
+
+        OverrideCommand("Read_oscilloscope_both_channel", new Command("Read_oscilloscope_both_channel") {
+            @Override
+            protected Object execute(Object arg) {
+                if (_dwf.FDwfAnalogInStatus(true) != 2)
+                    return null;
+
+                int sampleValid = _dwf.FDwfAnalogInStatusSamplesValid();
+                double[] values0 = _dwf.FDwfAnalogInStatusData(0, sampleValid);
+                double[] values1 = _dwf.FDwfAnalogInStatusData(1, sampleValid);
+
+                if (_offsetCorrection)
+                    for (int i = 0; i < sampleValid; i++) {
+                        values0[i] -= _offsetOpAmpIC2_IC3;
+                        values1[i] -= _offsetOpAmpIC4;
+                    }
+
+                ArrayList<double[]> values = new ArrayList<double[]>();
+                values.add(values0);
+                values.add(values1);
+
+                return values;
+            }
+        });
+        OverrideCommand("Read_oscilloscope_single_channel", new StringCommand("Read_oscilloscope_single_channel") {
+            @Override
+            protected Object execute(String arg) {
+                int idxCh;
+                try {
+                    idxCh = Integer.valueOf(arg);
+                } catch (Exception e) {
+                    if (verbose)
+                        e.printStackTrace();
+                    return null;
+                }
+
+                if (_dwf.FDwfAnalogInStatus(true) != 2)
+                    return null;
+
+                int sampleValid = _dwf.FDwfAnalogInStatusSamplesValid();
+                double[] values = _dwf.FDwfAnalogInStatusData(idxCh, sampleValid);
+
+                if (_offsetCorrection) {
+                    double offset = 0;
+
+                    switch (idxCh) {
+                        case 0:
+                            offset = _offsetOpAmpIC2_IC3;
+                            break;
+                        case 1:
+                            offset = _offsetOpAmpIC2_IC3;
+                            break;
+                        default:
+                            break;
+                    }
+
+                    for (int i = 0; i < sampleValid; i++)
+                        values[i] -= offset;
+                }
+
+                return values;
+            }
+        });
+        addCommand(new Command("Init_offsets") {
+            @Override
+            protected Object execute(Object arg) {
+                _offsetOpAmpIC2_IC3 = 0;
+                _offsetOpAmpIC4 = 0;
+
+                boolean success = SetSwitch(false);
+                success = success && _MuxGR.enable();
+                success = success && _MuxGR.selectLine(0);
+                success = success && _MuxPGA.selectLine(7);
+
+                try {
+                    Thread.sleep(1000);
+                    ArrayList<double[]> values = ReadOscilloscopeBothChannel();
+
+                    double avgVoltage1 = Arrays.stream(values.get(0)).average().getAsDouble();
+                    double avgVoltage2 = Arrays.stream(values.get(1)).average().getAsDouble();
+
+                    _offsetOpAmpIC2_IC3 = avgVoltage1;
+                    _offsetOpAmpIC4 = avgVoltage2 / getCurrentGainPGA();
+
+                    System.out.println("OffsetOpAmpIC2_IC3: " + _offsetOpAmpIC2_IC3);
+                    System.out.println("OffsetOpAmpIC4: " + _offsetOpAmpIC2_IC3);
+
+                    return success;
+                } catch (InterruptedException e) {
+                    return false;
+                }
+            }
+        });
+        addCommand(new Command("Set_current_gain") {
+            @Override
+            protected Object execute(Object arg) {
+                try {
+                    int idx = Integer.valueOf(String.class.cast(arg));
+                    return _MuxPGA.selectLine(idx);
+                } catch (Exception e) {
+                    return false;
+                }
             }
         });
 
@@ -63,25 +184,35 @@ public class Moira extends AnalogDiscovery2 {
             protected Object execute(Object arg) {
                 boolean value = Boolean.parseBoolean(arg.toString());
                 if (value)
-                    return digitalWrie(_switchDriver, 1);
+                    return digitalWrie(_switchGPIO, 1);
                 else
-                    return digitalWrie(_switchDriver, 0);
+                    return digitalWrie(_switchGPIO, 0);
             }
         });
 
-        _switchDriver = 0;
-        _MuxPGA = new muxMAX338(1, 2, 3, -1);
-        _CurrentGains = new double[] { 1, 2, 4, 8, 16, 32, 64, 128 };
+        _switchGPIO = 7;
+        _MuxPGA = new muxMAX338(1, 8, 0, -1);
+        _MuxGR = new muxMAX338(2, 11, 10, 9);
+        _CorGains = new double[] { 1, 2, 4, 8, 16, 32, 64, 128 };
         _shuntResistor = 1;
-        _state = MoiraState.freeRun;
+
+        _state = MoiraState.DirectCoupled;
     }
 
     public boolean SetSwitch(boolean value) {
         return (boolean) executeCommand("Set_switch", Boolean.toString(value));
     }
 
+    public boolean InitOffsets() {
+        return (boolean) executeCommand("Init_offsets", null);
+    }
+
     public double convertToCurrent(double voltage) {
-        return voltage / (_shuntResistor * _CurrentGains[_MuxPGA.get_selectedLine()]);
+        return voltage / (_shuntResistor * _CorGains[_MuxPGA.get_selectedLine()]);
+    }
+
+    public double getCurrentGainPGA() {
+        return _CorGains[_MuxPGA.get_selectedLine()];
     }
 
     private class muxMAX338 {

@@ -9,14 +9,14 @@ import java.util.ArrayList;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
 
-import LoggerCore.LoggerApp;
+import LoggerCore.LoggerFrame;
 import LoggerCore.PointsArrayStream;
-import LoggerCore.Menu.MenuLoggerAppFile;
+import LoggerCore.Menu.MenuLoggerFrameFile;
 import LoggerCore.Zefiro.Zefiro;
 
 public class FastChannelMonitor extends PointsArrayStream {
 
-    LoggerApp _FastMonitorApp;
+    LoggerFrame _FastMonitorApp;
     Zefiro _zef;
 
     String CommandArg;
@@ -26,7 +26,7 @@ public class FastChannelMonitor extends PointsArrayStream {
 
         _zef = zef;
 
-        _FastMonitorApp = new LoggerApp();
+        _FastMonitorApp = new LoggerFrame();
         _FastMonitorApp.setTitle("Fast channel Monitor");
         _FastMonitorApp.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         _FastMonitorApp.addWindowListener(new WindowAdapter() {
@@ -38,7 +38,7 @@ public class FastChannelMonitor extends PointsArrayStream {
             }
         });
 
-        MenuLoggerAppFile fileMenu = new MenuLoggerAppFile(_FastMonitorApp, "File");
+        MenuLoggerFrameFile fileMenu = new MenuLoggerFrameFile(_FastMonitorApp, "File");
         fileMenu.add(fileMenu.BuildPropertyChartMenu(false));
 
         JMenuBar menuBar = new JMenuBar();

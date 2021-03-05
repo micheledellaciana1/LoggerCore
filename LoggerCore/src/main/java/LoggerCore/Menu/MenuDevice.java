@@ -1,5 +1,7 @@
 package LoggerCore.Menu;
 
+import java.util.ArrayList;
+
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -25,8 +27,8 @@ public class MenuDevice extends BasicMenu {
         String CommandName = _dev.getCommand(index).getName();
         return BuildArgStringMenuItem(new InputStringAction(label, message, CommandName, initialValue) {
             @Override
-            public void actionPerformed() {
-                _dev.executeCommand(index, _input);
+            public void actionPerformed(String input) {
+                _dev.executeCommand(index, input);
             }
         });
     }
@@ -52,6 +54,33 @@ public class MenuDevice extends BasicMenu {
         System.out.println("Return null: No command called: " + CommandName);
 
         return null;
+    }
+
+    public JMenuItem BuildSliderCommandItem(String label, final String CommandName, double min, double max,
+            final double initialValue) {
+        return BuildSliderMenuItem(label, min, max, initialValue, new DoubleJSliderChangeListener() {
+            @Override
+            public void valueChanged(double valueSlider) {
+                _dev.executeCommand(CommandName, Double.toString(valueSlider));
+            }
+        });
+    }
+
+    public JMenuItem BuildNSliderCommandItem(String name, ArrayList<String> labels, ArrayList<String> CommandNames,
+            ArrayList<Double> mins, ArrayList<Double> maxs, ArrayList<Double> initialValues) {
+
+        ArrayList<DoubleJSliderChangeListener> listeners = new ArrayList<DoubleJSliderChangeListener>();
+        for (int i = 0; i < CommandNames.size(); i++) {
+            final String command = CommandNames.get(i);
+            listeners.add(new DoubleJSliderChangeListener() {
+                @Override
+                public void valueChanged(double valueSlider) {
+                    _dev.executeCommand(command, Double.toString(valueSlider));
+                }
+            });
+        }
+
+        return BuildNSliderMenuItem(name, labels, mins, maxs, initialValues, listeners);
     }
 
     public JMenuItem BuildNoArgCommandItem(final int index) {

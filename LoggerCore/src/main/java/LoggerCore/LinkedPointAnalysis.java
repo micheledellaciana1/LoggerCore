@@ -11,7 +11,7 @@ public abstract class LinkedPointAnalysis extends LinkedAnalysis {
 
     public LinkedPointAnalysis(Comparable<?> key) {
         super(key.toString());
-        _points = new XYSeries(key);
+        _points = new XYSeries(key, false);
     }
 
     private synchronized void setflagIsRendering(boolean newValue) {
@@ -25,6 +25,8 @@ public abstract class LinkedPointAnalysis extends LinkedAnalysis {
     @Override
     public Point2D ExecuteAnalysis(final Object newData) {
         final Point2D _ExtractedPoint = ExecutePointAnalysis(newData);
+        if (_ExtractedPoint == null)
+            return null;
 
         _points.setNotify(false);
         _points.add(_ExtractedPoint.getX(), _ExtractedPoint.getY());

@@ -22,7 +22,7 @@ public class Icaro extends SerialDevice {
         super(name, port);
         _LUTHeater = LUTHeater;
 
-        addCommand(new StringCommand("Set current heater") {
+        addCommand(new StringCommand("Set voltage heater") {
             @Override
             protected Object execute(String arg) {
                 try {
@@ -33,7 +33,7 @@ public class Icaro extends SerialDevice {
                     return false;
                 }
 
-                _serialBuffer.println("SetVoltageHeater");
+                _serialBuffer.println("Set_Voltage_Heater");
                 _serialBuffer.println(arg);
                 return true;
             }
@@ -55,7 +55,7 @@ public class Icaro extends SerialDevice {
         addCommand(new Command("ReadPT100Resistance") {
             @Override
             protected Object execute(Object arg) {
-                return executeCommand("askDouble", "ReadPT100Resistance");
+                return executeCommand("askDouble", "Read_PT100_Resistance");
             }
 
             @Override
@@ -75,7 +75,7 @@ public class Icaro extends SerialDevice {
                     return false;
                 }
 
-                _serialBuffer.println("SetAverageTime");
+                _serialBuffer.println("Set_Average_Time");
                 _serialBuffer.println(arg);
                 return true;
             }
@@ -84,7 +84,7 @@ public class Icaro extends SerialDevice {
         addCommand(new Command("ReadTempSensor") {
             @Override
             protected Object execute(Object arg) {
-                return executeCommand("askDouble", "ReadTempSensor");
+                return executeCommand("askDouble", "Read_Temp_Sensor");
             }
 
             @Override
@@ -96,7 +96,19 @@ public class Icaro extends SerialDevice {
         addCommand(new Command("ReadRHSensor") {
             @Override
             protected Object execute(Object arg) {
-                return executeCommand("askDouble", "ReadRHSensor");
+                return executeCommand("askDouble", "Read_RH_Sensor");
+            }
+
+            @Override
+            protected Object executeSimulation(Object arg) {
+                return 40 + Math.random();
+            }
+        });
+
+        addCommand(new Command("ReadTempBoard") {
+            @Override
+            protected Object execute(Object arg) {
+                return executeCommand("askDouble", "Read_Temp_Board");
             }
 
             @Override
@@ -141,6 +153,11 @@ public class Icaro extends SerialDevice {
 
     public double getVoltageHeater() {
         return _VoltageHeater;
+    }
+
+    public double getTemperatureBoard() {
+        double temperature = Double.class.cast(executeCommand("ReadTempBoard", null));
+        return temperature;
     }
 
     public void set_LUTHeater(LookUpTable _LUTHeater) {

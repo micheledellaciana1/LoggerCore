@@ -63,6 +63,8 @@ public class FeedBackController_type2 implements IFeedbackController {
 
         double error = _target_value - measuredValue;
         _integralError += error * deltaTime;
+        if (_integralError < 0)
+            _integralError = 0;
 
         double responce = error * _proportional + _integralError * _integral + derivate() * _differential;
 
@@ -85,10 +87,10 @@ public class FeedBackController_type2 implements IFeedbackController {
     public void setParameters(int index, double value) {
         switch (index) {
             case 0:
-                _integral = value;
+                _proportional = value;
                 break;
             case 1:
-                _differential = value;
+                _integral = value;
                 break;
             case 2:
                 _differential = value;

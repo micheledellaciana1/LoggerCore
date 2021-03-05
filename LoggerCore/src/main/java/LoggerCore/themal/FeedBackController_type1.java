@@ -41,7 +41,6 @@ public class FeedBackController_type1 implements IFeedbackController {
     }
 
     public double responce(double measuredValue, double actual_responce) {
-
         if (!_feedbackON)
             return actual_responce;
 

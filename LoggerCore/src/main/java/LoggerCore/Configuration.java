@@ -50,7 +50,7 @@ public class Configuration {
         } catch (Exception e) {
         }
 
-        System.out.println("Attribute <" + Name + "> not present in + <" + Name + "> Configuration");
+        System.out.println("Attribute <" + Name + "> not present in <" + Name + "> Configuration");
         return null;
     }
 

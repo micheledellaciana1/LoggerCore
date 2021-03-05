@@ -7,7 +7,7 @@ public class AutosaveRunnable extends StoppableRunnable {
 
     static private AutosaveRunnable _instance = new AutosaveRunnable();
 
-    private ArrayList<LoggerApp> _loggerApps;
+    private ArrayList<LoggerFrame> _LoggerFrames;
     private ArrayList<File> _CorFolder;
 
     private File _AutosaveDirectory;
@@ -18,7 +18,7 @@ public class AutosaveRunnable extends StoppableRunnable {
 
     private AutosaveRunnable() {
         super();
-        _loggerApps = new ArrayList<LoggerApp>();
+        _LoggerFrames = new ArrayList<LoggerFrame>();
         _CorFolder = new ArrayList<File>();
     }
 
@@ -26,21 +26,21 @@ public class AutosaveRunnable extends StoppableRunnable {
         _AutosaveDirectory = AutosaveDirectory;
     }
 
-    public void addDataset(LoggerApp loggerApp, String RelativePath) {
+    public void addDataset(LoggerFrame LoggerFrame, String RelativePath) {
         File CorrespondingFolder = new File(_AutosaveDirectory, RelativePath);
         _CorFolder.add(CorrespondingFolder);
-        _loggerApps.add(loggerApp);
+        _LoggerFrames.add(LoggerFrame);
     }
 
     @Override
     public void MiddleLoop() {
         System.out.println("Autosave ...");
 
-        for (int i = 0; i < _loggerApps.size(); i++) {
+        for (int i = 0; i < _LoggerFrames.size(); i++) {
             try {
                 if (!_CorFolder.get(i).exists())
                     _CorFolder.get(i).mkdir();
-                _loggerApps.get(i).ExportEveryLoadeXYSeries(_CorFolder.get(i));
+                _LoggerFrames.get(i).ExportEveryLoadeXYSeries(_CorFolder.get(i));
             } catch (Exception e) {
                 if (verbose)
                     e.printStackTrace();

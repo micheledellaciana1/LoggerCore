@@ -18,7 +18,7 @@ import org.jfree.data.xy.XYSeriesCollection;
 
 import LoggerCore.JFreeChartUtil.JFreeChartUtil;
 
-public class LoggerApp extends JFrame {
+public class LoggerFrame extends JFrame {
     public boolean verbose = true;
 
     protected ChartPanel _panel;
@@ -31,7 +31,7 @@ public class LoggerApp extends JFrame {
     protected ArrayList<String> _unityX;
     protected ArrayList<String> _unityY;
 
-    public LoggerApp() {
+    public LoggerFrame() {
         super();
 
         _loadedDataset = new XYSeriesCollection();
@@ -167,8 +167,8 @@ public class LoggerApp extends JFrame {
         return _panel;
     }
 
-    public LoggerApp cloneWithSharedDataset() {
-        LoggerApp clone = new LoggerApp();
+    public LoggerFrame cloneWithSharedDataset() {
+        LoggerFrame clone = new LoggerFrame();
 
         clone._loadedDataset = _loadedDataset;
         clone._unityX = _unityX;
@@ -208,7 +208,7 @@ public class LoggerApp extends JFrame {
             _loadedDataset.getSeries(i).clear();
     }
 
-    public void EraseAllSeries() {
+    public void removeAllSeries() {
         _DisplayedDataset.removeAllSeries();
         _loadedDataset.removeAllSeries();
         _unityX.clear();
@@ -222,5 +222,9 @@ public class LoggerApp extends JFrame {
                 return true;
         }
         return false;
+    }
+
+    public void addToAutosave(String relativePath) {
+        AutosaveRunnable.getInstance().addDataset(this, relativePath);
     }
 }

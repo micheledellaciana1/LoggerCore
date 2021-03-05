@@ -1,0 +1,12 @@
+Simulate:false
+Autosave:false todo
+AutosavePath:/Users/Utente/Desktop/AutosaveMoira todo
+AutosavePeriodSec:3600 todo
+DelayAcq:100
+DefIVChArgs:-10 10 0.1 1 true 500
+PATH_LogBook:null
+PATH_defLUT:null
+FBPar_SoftwareFollower:1
+MinVoltageWX:-10
+MaxVoltageWX:10
+ZeroTimeOnErase:true

@@ -28,7 +28,7 @@ public class HeaterTemperatureMonitor extends PointsStream {
             public Point2D ExecutePointAnalysis(Object newData) {
                 Point2D temperature = Point2D.Double.class.cast(newData);
                 double responce = _feedBackController.responce(temperature.getY(), _ica.getVoltageHeater());
-                _ica.executeCommand("Set current heater", Double.toString(responce));
+                _ica.executeCommand("Set voltage heater", Double.toString(responce));
 
                 return new Point2D.Double(temperature.getX(), _ica.getVoltageHeater());
             }

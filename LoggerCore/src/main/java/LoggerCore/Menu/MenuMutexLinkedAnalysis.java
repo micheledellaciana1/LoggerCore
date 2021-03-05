@@ -37,14 +37,14 @@ public class MenuMutexLinkedAnalysis extends BasicMenu {
         return BuildArgStringMenuItem(
                 new InputStringAction(name, message, name, initialValue, "Link " + _linkedAnalysis.get_name()) {
                     @Override
-                    public void actionPerformed() {
+                    public void actionPerformed(String input) {
                         if (_linkedAnalysis != null) {
                             _linkedAnalysis.removeFromAllCollections();
                             if (_logAction)
                                 _logBook.log("Unlink " + _linkedAnalysis.get_name());
                         }
 
-                        if (!linkedAnalysis.setup(_input))
+                        if (!linkedAnalysis.setup(input))
                             return;
 
                         _linkedAnalysis = linkedAnalysis;

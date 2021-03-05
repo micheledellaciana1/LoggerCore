@@ -13,13 +13,14 @@ import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 
 import LoggerCore.GlobalVar;
-import LoggerCore.LoggerApp;
+import LoggerCore.LoggerFrame;
+import LoggerCore.ThreadManager;
 import LoggerCore.JFreeChartUtil.JFreeChartUtil;
 
-public class MenuLoggerAppFile extends BasicMenu {
-    protected LoggerApp _logger;
+public class MenuLoggerFrameFile extends BasicMenu {
+    protected LoggerFrame _logger;
 
-    public MenuLoggerAppFile(LoggerApp logger, String name) {
+    public MenuLoggerFrameFile(LoggerFrame logger, String name) {
         super(name);
         _logger = logger;
     }
@@ -28,16 +29,16 @@ public class MenuLoggerAppFile extends BasicMenu {
         return BuildNoArgMenuItem(new NoInputAction("Duplicate") {
             @Override
             public void actionPerformed() {
-                LoggerApp clone = _logger.cloneWithSharedDataset();
+                LoggerFrame clone = _logger.cloneWithSharedDataset();
                 JMenuBar menubar = new JMenuBar();
 
-                MenuLoggerAppFile fileMenu = new MenuLoggerAppFile(clone, "file");
+                MenuLoggerFrameFile fileMenu = new MenuLoggerFrameFile(clone, "file");
                 fileMenu.add(fileMenu.BuildPropertyChartMenu(includeFIFO));
-                fileMenu.add(new MenuLoggerAppExportTxtFile(clone, "Export .txt").BuildDefault());
+                fileMenu.add(new MenuLoggerFrameExportTxtFile(clone, "Export .txt").BuildDefault());
                 fileMenu.add(fileMenu.BuildDuplicateItem(includeFIFO));
 
                 menubar.add(fileMenu);
-                menubar.add(new MenuLoggerAppDisplay(clone, "Display").BuildDefault());
+                menubar.add(new MenuLoggerFrameDisplay(clone, "Display").BuildDefault());
                 clone.setJMenuBar(menubar);
                 clone.setVisible(true);
             }
@@ -175,6 +176,20 @@ public class MenuLoggerAppFile extends BasicMenu {
         });
     }
 
+    private FrameThreadManager _frameThreadManager = null;
+
+    public JMenuItem BuildThreadManagerItem(final String name, final ThreadManager tm) {
+        return new JMenuItem(new AbstractAction(name) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (_frameThreadManager != null)
+                    _frameThreadManager.dispose();
+
+                _frameThreadManager = new FrameThreadManager(name, tm);
+            }
+        });
+    }
+
     public JMenuItem BuildEraseSeriesItem(String name) {
         return BuildNoArgMenuItem(new NoInputAction(name, "Erase all series " + _logger.getTitle(),
                 UIManager.getIcon("OptionPane.warningIcon")) {
@@ -183,7 +198,7 @@ public class MenuLoggerAppFile extends BasicMenu {
                 switch (JOptionPane.showConfirmDialog(null, "Are you sure you want to delete all series?",
                         "Erase series", JOptionPane.WARNING_MESSAGE)) {
                     case 0:
-                        _logger.EraseAllSeries();
+                        _logger.removeAllSeries();
                         break;
                     default:
                         break;

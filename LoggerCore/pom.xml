@@ -89,6 +89,7 @@
             <archive>
               <manifest>
                 <mainClass>LoggerCore.Zefiro.ZefiroApp</mainClass>
+                <!--mainClass>LoggerCore.Icaro.IcaroApp</mainClass-->
               </manifest>
             </archive>
           </configuration>

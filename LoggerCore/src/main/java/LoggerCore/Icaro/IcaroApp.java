@@ -16,10 +16,12 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 
 import LoggerCore.*;
+import LoggerCore.Icaro.FastChannelMonitor.FastChannelMonitor;
+import LoggerCore.Icaro.ThermistorLUT.PT100;
 import LoggerCore.Menu.*;
 import LoggerCore.themal.*;
 
-public class IcaroApp extends LoggerApp {
+public class IcaroApp extends LoggerFrame {
 
     private Icaro _ica;
     private Configuration _configFile;
@@ -42,9 +44,9 @@ public class IcaroApp extends LoggerApp {
         boolean isASimulation = Boolean.valueOf(_configFile.search("Simulate"));
 
         if (isASimulation)
-            _ica = new Icaro("Zefiro", null, null);
+            _ica = new Icaro("Icaro", null, null);
         else
-            _ica = new Icaro("Zefiro", null, SerialPort.getCommPorts()[0]);
+            _ica = new Icaro("Icaro", PT100.instance, SerialPort.getCommPorts()[0]);
 
         _ica.isASimulation = isASimulation;
         _ica.executeCommand("Open", null);
@@ -71,15 +73,16 @@ public class IcaroApp extends LoggerApp {
             }
         });
 
-        double FB1 = Double.valueOf(_configFile.search("FBPar1"));
-        double FB2 = Double.valueOf(_configFile.search("FBPar2"));
-        double FB3 = Double.valueOf(_configFile.search("FBPar3"));
+        double FB1 = _configFile.searchDouble("FBPar1");
+        double FB2 = _configFile.searchDouble("FBPar2");
+        double FB3 = _configFile.searchDouble("FBPar3");
 
         _feedBackController = new FeedBackController_type2(FB1, FB2, FB3);
         _feedBackController.MIN_responce = Double.valueOf(_configFile.search("MinVoltageHeater"));
         _feedBackController.MAX_responce = Double.valueOf(_configFile.search("MaxVoltageHeater"));
+        _feedBackController.setTolleratedError(_configFile.searchDouble("TolleratedErrorDegree"));
 
-        _heaterMonitor = new HeaterTemperatureMonitor(_ica, _feedBackController, "Heater temperature", "Heater current",
+        _heaterMonitor = new HeaterTemperatureMonitor(_ica, _feedBackController, "Heater temperature", "Heater voltage",
                 "Target temperature");
         _heaterMonitor.setExecutionDelay(Integer.valueOf(_configFile.search("DelayHeaterAcq")));
         Thread HeaterMonitorThread = new Thread(_heaterMonitor);
@@ -92,22 +95,29 @@ public class IcaroApp extends LoggerApp {
 
         addXYSeries(_heaterMonitor.getTemperatureSeries(), "time[sec]", "Temperature[°C]");
         addXYSeries(_heaterMonitor.getVoltagetHeaterSeries(), "time[sec]", "Voltage[a.u]");
+
+        BoardTemperature btm = new BoardTemperature("Board Temperature", _ica);
+        Thread BoardTemperatureT = new Thread(btm);
+        BoardTemperatureT.start();
+
         addXYSeries(_heaterMonitor.getTargetTemperatureSeries(), "time[sec]", "Temperature[°C]");
 
         addXYSeries(cm.getTempSeries(), "time[sec]", "Temperature[°C]");
         addXYSeries(cm.getRHSeries(), "time[sec]", "RH[%]");
+        addXYSeries(btm.getSeries(), "time[sec]", "Temperature[°C]");
 
-        MenuLoggerAppDisplay DisplayMenu = new MenuLoggerAppDisplay(this, "Display");
+        MenuLoggerFrameDisplay DisplayMenu = new MenuLoggerFrameDisplay(this, "Display");
         JMenu subMenuHeater = DisplayMenu.BuildSubMenu("Heater", new int[] { 0, 1, 2 });
         JMenu subMenuChamber = DisplayMenu.BuildSubMenu("Chamber", new int[] { 3, 4 });
 
         DisplayMenu.add(subMenuHeater);
         DisplayMenu.add(subMenuChamber);
+        DisplayMenu.add(DisplayMenu.BuildDisplaySeriesItem(5));
 
         DisplayMenu.add(DisplayMenu.BuildHideJMenuItem());
 
         MenuFeedBackController menuFeedback = new MenuFeedBackController("Temperature Feedback", _feedBackController);
-        menuFeedback.add(menuFeedback.BuildSetTargetValueItem("Set temperature", "Enter: <Temperature[°C]>", "100"));
+        menuFeedback.add(menuFeedback.BuildSetTargetValueItem("Set temperature", 0, 600, 0));
         menuFeedback.add(menuFeedback.BuildSetParametersItem("Feedback parameters", "Enter: <Prop.> <Int.> <Diff.>",
                 FB1 + " " + FB2 + " " + FB3));
         menuFeedback.add(menuFeedback.BuildFeedBackOnCheckBox("Active feedback"));
@@ -122,27 +132,30 @@ public class IcaroApp extends LoggerApp {
 
         subMenuGeneral.add(subMenuSetAcq);
         DeviceMenu.add(subMenuGeneral);
-        subMenuSet.add(DeviceMenu.BuildStringCommandItem("Set current heater", "Enter: <VoltageHeater>", "0"));
+        subMenuSet.add(DeviceMenu.BuildStringCommandItem("Set voltage heater", "Enter: <VoltageHeater>", "0"));
         DeviceMenu.add(subMenuSet);
         DeviceMenu.add(menuFeedback);
+        DeviceMenu.add(DeviceMenu.BuildDeviceMonitorFrame("Icaro status", "Icaro status"));
 
         MenuRoutine mr = new MenuRoutine("Routine");
         String DefTemperatureRamp = _configFile.search("DefTemperatureRamp");
         mr.add(mr.BuildStringRoutineItem("Temperature ramp", new TemperatureRamp(_feedBackController),
                 "Enter: <TStart> <TStop> <TStep> <NCycle> <Up&Down> <delay>", DefTemperatureRamp));
-        mr.add(mr.BuildStopRoutineItem("Stop routine"));
+        mr.add(mr.BuildStringRoutineItem("Fast channel monitor", new FastChannelMonitor(_ica),
+                "Enter: <AnalogChannel> <NPoints>", "15 1000"));
+        mr.add(mr.BuildStopRoutineItem());
 
-        MenuLoggerAppExportTxtFile menuExport = new MenuLoggerAppExportTxtFile(this, "Export .txt");
+        MenuLoggerFrameExportTxtFile menuExport = new MenuLoggerFrameExportTxtFile(this, "Export .txt");
         JMenu subMenuHeaterExp = menuExport.BuildSubMenu("Heater", new int[] { 0, 1, 2 });
         JMenu subMenuChamberExp = menuExport.BuildSubMenu("Chamber", new int[] { 3, 4 });
+        menuExport.add(menuExport.BuildExportTextSeriesItem(5));
         menuExport.add(subMenuHeaterExp);
         menuExport.add(subMenuChamberExp);
         menuExport.add(menuExport.BuildExportEverySeriesItem("Export every series .txt", " "));
 
-        MenuLoggerAppFile menuFile = new MenuLoggerAppFile(this, "file");
+        MenuLoggerFrameFile menuFile = new MenuLoggerFrameFile(this, "file");
         menuFile.add(menuFile.BuildPropertyChartMenu(true));
         menuFile.add(menuExport);
-        menuFile.add(BuildImportCalibrationItem("Import heater calibration"));
         menuFile.add(menuFile.BuildEraseSeriesDataItem("Delete data", true));
         menuFile.add(menuFile.BuildDuplicateItem(true));
 

@@ -16,6 +16,7 @@ public class TemperatureRamp extends StoppableRunnable {
 
     public TemperatureRamp(IFeedbackController feedbackController) {
         super();
+        setName("Temperature Ramp");
         _feedbackController = feedbackController;
     }
 

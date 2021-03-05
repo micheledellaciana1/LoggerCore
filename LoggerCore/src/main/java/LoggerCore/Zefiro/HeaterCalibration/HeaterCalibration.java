@@ -11,7 +11,7 @@ import javax.swing.JFrame;
 import org.jfree.data.xy.XYSeries;
 
 import LoggerCore.GlobalVar;
-import LoggerCore.LoggerAppMinimal;
+import LoggerCore.LoggerFrameMinimal;
 import LoggerCore.PointsStream;
 import LoggerCore.Zefiro.Zefiro;
 import LoggerCore.themal.IFeedbackController;
@@ -22,7 +22,7 @@ public class HeaterCalibration extends PointsStream {
     protected double _alpha;
     protected double _beta;
     protected Zefiro _zef;
-    protected LoggerAppMinimal _logger;
+    protected LoggerFrameMinimal _logger;
     protected double _exitationCurrent;
     protected IFeedbackController _feedbackHeater;
 
@@ -33,8 +33,8 @@ public class HeaterCalibration extends PointsStream {
         _zef = zef;
         _feedbackHeater = feedbackHeater;
 
-        _logger = new LoggerAppMinimal(false, true);
-        _logger.setTitle("Heater Calibration");
+        _logger = new LoggerFrameMinimal(false, true, false);
+        _logger.setTitle("IVCharacteristic");
         _logger.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         _logger.addWindowListener(new WindowAdapter() {
             @Override

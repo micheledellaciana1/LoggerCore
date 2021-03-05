@@ -6,7 +6,6 @@ import javax.swing.AbstractAction;
 import javax.swing.JCheckBox;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 
 import LoggerCore.themal.IFeedbackController;
 
@@ -30,9 +29,9 @@ public class MenuFeedBackController extends BasicMenu {
     public JMenuItem BuildSetParametersItem(String name, final String message, final String initialValue) {
         return BuildArgStringMenuItem(new InputStringAction(name, message, name, initialValue) {
             @Override
-            public void actionPerformed() {
+            public void actionPerformed(String input) {
                 try {
-                    String par[] = _input.split(" ");
+                    String par[] = input.split(" ");
                     _feedbackController.setParameters(0, Double.valueOf(par[0]));
                     _feedbackController.setParameters(1, Double.valueOf(par[1]));
                     _feedbackController.setParameters(2, Double.valueOf(par[2]));
@@ -44,13 +43,13 @@ public class MenuFeedBackController extends BasicMenu {
         });
     }
 
-    public JMenuItem BuildSetTargetValueItem(String name, final String message, final String initialValue) {
-        return BuildArgStringMenuItem(new InputStringAction(name, message, name, initialValue) {
+    public JMenuItem BuildSetTargetValueItem(String name, double min, double max, final double initialValue) {
+        return BuildSliderMenuItem(name, min, max, initialValue, new DoubleJSliderChangeListener() {
+
             @Override
-            public void actionPerformed() {
+            public void valueChanged(double valueSlider) {
                 try {
-                    double targetValue = Double.valueOf(_input);
-                    _feedbackController.set_target_value(targetValue);
+                    _feedbackController.set_target_value(valueSlider);
                 } catch (Exception e) {
                     if (verbose)
                         e.printStackTrace();
@@ -78,8 +77,7 @@ public class MenuFeedBackController extends BasicMenu {
         add(BuildFeedBackOnCheckBox("Feedback ON"));
         add(BuildSetParametersItem("Parameters", "Enter: <Par0> <Pars1> <Pars2>", _feedbackController.getParameters(0)
                 + " " + _feedbackController.getParameters(1) + " " + _feedbackController.getParameters(2)));
-        add(BuildSetTargetValueItem("Target value", "Enter: <TargetValue>",
-                Double.toString(_feedbackController.getTarget())));
+        add(BuildSetTargetValueItem("Target value", 0., 1500., _feedbackController.getTarget()));
         return this;
     }
 }

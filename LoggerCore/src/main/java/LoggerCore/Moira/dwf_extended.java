@@ -119,6 +119,7 @@ public class dwf_extended extends DWF {
     public boolean FDwfAnalogInBufferSizeSet(int size) {
         if (size > DWF.AD2_MAX_BUFFER_SIZE) {
             _AnalogInBufferSize = DWF.AD2_MAX_BUFFER_SIZE;
+            return super.FDwfAnalogInBufferSizeSet(DWF.AD2_MAX_BUFFER_SIZE);
         }
 
         _AnalogInBufferSize = size;

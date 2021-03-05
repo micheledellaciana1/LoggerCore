@@ -4,8 +4,8 @@ public abstract class StoppableRunnable implements Runnable {
     public boolean verbose = true;
 
     private volatile boolean _BREAK = false;
-    private boolean _isRunning = false;
-    private String _name;
+    private volatile boolean _isRunning = false;
+    protected String _name;
 
     protected int _ExecutionDelay = 0;
     protected int _ExecutionDelay2 = 0;
@@ -55,7 +55,7 @@ public abstract class StoppableRunnable implements Runnable {
 
     @Override
     public void run() {
-        _isRunning = true;
+        set_isRunning(true);
 
         while (!getBREAK()) {
             StartLoop();
@@ -81,7 +81,7 @@ public abstract class StoppableRunnable implements Runnable {
             EndLoop();
         }
 
-        _isRunning = false;
+        set_isRunning(false);
         setBREAK(false);
         OnClosing();
     }
@@ -110,5 +110,9 @@ public abstract class StoppableRunnable implements Runnable {
 
     public synchronized boolean getisRunning() {
         return _isRunning;
+    }
+
+    private synchronized void set_isRunning(boolean _isRunning) {
+        this._isRunning = _isRunning;
     }
 }

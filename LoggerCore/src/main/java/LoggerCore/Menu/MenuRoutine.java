@@ -2,6 +2,9 @@ package LoggerCore.Menu;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.UIManager;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.MenuListener;
 
 import LoggerCore.StoppableRunnable;
 
@@ -18,8 +21,11 @@ public class MenuRoutine extends BasicMenu {
         return BuildNoArgMenuItem(new NoInputAction(name, "Started macro " + runnable.getName()) {
             @Override
             public void actionPerformed() {
-                if (_runningRoutine != null && _runningRoutine.getisRunning()) {
-                    _runningRoutine.kill();
+                if (_runningRoutine != null) {
+                    while (_runningRoutine.getisRunning()) {
+                        _runningRoutine.kill();
+                    }
+
                     if (_logAction)
                         _logBook.log("Stopped " + _runningRoutine.getName() + " macro");
                 }
@@ -28,6 +34,7 @@ public class MenuRoutine extends BasicMenu {
                     return;
 
                 _runningRoutine = runnable;
+
                 Thread t = new Thread(_runningRoutine);
                 t.start();
             }
@@ -39,9 +46,12 @@ public class MenuRoutine extends BasicMenu {
         return BuildArgStringMenuItem(
                 new InputStringAction(name, message, name, initialValue, "Started macro " + runnable.getName()) {
                     @Override
-                    public void actionPerformed() {
-                        if (_runningRoutine != null && _runningRoutine.getisRunning()) {
-                            _runningRoutine.kill();
+                    public void actionPerformed(String input) {
+                        if (_runningRoutine != null) {
+                            while (_runningRoutine.getisRunning()) {
+                                _runningRoutine.kill();
+                            }
+
                             if (_logAction)
                                 _logBook.log("Stopped " + _runningRoutine.getName() + " macro");
                         }
@@ -50,27 +60,55 @@ public class MenuRoutine extends BasicMenu {
                             return;
 
                         _runningRoutine = runnable;
+
                         Thread t = new Thread(_runningRoutine);
                         t.start();
                     }
                 });
     }
 
-    public JMenuItem BuildStopRoutineItem(String name) {
-        return BuildNoArgMenuItem(new NoInputAction(name) {
+    public JMenuItem BuildStopRoutineItem() {
+        final JMenuItem item = BuildNoArgMenuItem(new NoInputAction(null) {
             @Override
             public void actionPerformed() {
                 if (_runningRoutine != null) {
-                    _runningRoutine.kill();
-                } else {
-                    return;
+
+                    if (!_runningRoutine.getisRunning())
+                        return;
+
+                    while (_runningRoutine.getisRunning()) {
+                        _runningRoutine.kill();
+                    }
+
+                    _logString = "Stopped " + _runningRoutine.getName() + " macro";
                 }
 
-                _logString = "Stopped " + _runningRoutine.getName();
                 _runningRoutine = null;
             }
         });
 
+        addMenuListener(new MenuListener() {
+            @Override
+            public void menuSelected(MenuEvent e) {
+                if (_runningRoutine != null && _runningRoutine.getisRunning()) {
+                    item.setText("Stop <" + _runningRoutine.getName() + ">");
+                    item.setIcon(UIManager.getIcon("OptionPane.warningIcon"));
+                } else {
+                    item.setText("No running routine");
+                    item.setIcon(UIManager.getIcon("OptionPane.informationIcon"));
+                }
+            }
+
+            @Override
+            public void menuDeselected(MenuEvent e) {
+            }
+
+            @Override
+            public void menuCanceled(MenuEvent e) {
+            }
+        });
+
+        return item;
     }
 
     @Override

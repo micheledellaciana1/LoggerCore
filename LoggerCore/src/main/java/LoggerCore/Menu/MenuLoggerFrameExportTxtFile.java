@@ -12,20 +12,20 @@ import javax.swing.event.MenuListener;
 
 import org.apache.jorphan.gui.MenuScroller;
 
-import LoggerCore.LoggerApp;
+import LoggerCore.LoggerFrame;
 
-public class MenuLoggerAppExportTxtFile extends BasicMenu {
+public class MenuLoggerFrameExportTxtFile extends BasicMenu {
 
-    protected LoggerApp _logger;
+    protected LoggerFrame _logger;
     protected static File _currentDirectory = null;
 
-    public MenuLoggerAppExportTxtFile(LoggerApp Logger, String name) {
+    public MenuLoggerFrameExportTxtFile(LoggerFrame Logger, String name) {
         super(name);
         setIcon(UIManager.getIcon("FileView.floppyDriveIcon"));
         _logger = Logger;
     }
 
-    public MenuLoggerAppExportTxtFile BuildDefault() {
+    public MenuLoggerFrameExportTxtFile BuildDefault() {
         MenuScroller.setScrollerFor(this, 10);
 
         removeAll();

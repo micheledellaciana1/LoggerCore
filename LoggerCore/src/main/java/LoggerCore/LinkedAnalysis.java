@@ -5,7 +5,8 @@ import java.util.ArrayList;
 public abstract class LinkedAnalysis {
 
     protected String _name;
-    protected ArrayList<LinkedAnalysisCollection> _linkedAnalysisCollections;
+    protected ArrayList<LinkedAnalysisCollection> _linkedAnalysisCollections; // collections of listener linked to this
+                                                                              // analysis
     protected LinkedAnalysisCollection _linkedAnalyzes;
 
     public boolean verbose = true;

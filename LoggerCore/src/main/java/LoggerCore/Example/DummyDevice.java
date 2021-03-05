@@ -10,8 +10,8 @@ public class DummyDevice extends Device {
         addCommand(new Command("SayNothing") {
             @Override
             public Object execute(Object arg) {
-                System.out.println("nothing");
-                return null;
+                System.out.println("Nothing!");
+                return true;
             }
         });
 
@@ -19,7 +19,7 @@ public class DummyDevice extends Device {
             @Override
             public Object execute(Object arg) {
                 System.out.println(arg);
-                return null;
+                return true;
             }
         });
     }

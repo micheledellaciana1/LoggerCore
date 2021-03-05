@@ -2,8 +2,6 @@ package LoggerCore.Moira;
 
 import java.awt.EventQueue;
 
-import java.lang.reflect.InvocationTargetException;
-
 import java.util.ArrayList;
 
 import org.jfree.data.xy.XYSeries;

@@ -12,6 +12,8 @@ public class VoltageFollower extends StoppableRunnable {
     private FeedBackController_type1 _feedbackController;
 
     public VoltageFollower(Moira Moira, FeedBackController_type1 feedbackController, int executionDelay) {
+        _name = "Voltage Follower";
+
         _feedbackController = feedbackController;
         _moira = Moira;
 

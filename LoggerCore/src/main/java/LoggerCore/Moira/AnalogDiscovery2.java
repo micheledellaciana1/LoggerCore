@@ -59,18 +59,27 @@ public class AnalogDiscovery2 extends Device {
             }
         });
 
-        _commands.add(new StringCommand("Set_time_Base") {
+        _commands.add(new StringCommand("Set_time_base") {
             @Override
             protected Object execute(String arg) {
                 try {
-                    double value = Double.valueOf(arg);
+                    double timeBase = Double.valueOf(arg);
                     int bufferSize = DWF.AD2_MAX_BUFFER_SIZE;
-                    double SampleFrequency = bufferSize / value;
+                    double desiredFrequency = bufferSize / timeBase;
+                    int scaleFactor = (int) (1e8 / desiredFrequency);
 
-                    if (SampleFrequency > 1e8) {
+                    double SampleFrequency;
+
+                    if (scaleFactor > 1)
+                        SampleFrequency = 1e8 / scaleFactor;
+                    else {
                         SampleFrequency = 1e8;
-                        bufferSize = (int) Math.round(value * SampleFrequency);
                     }
+
+                    bufferSize = (int) (timeBase * SampleFrequency);
+
+                    if (bufferSize > DWF.AD2_MAX_BUFFER_SIZE)
+                        bufferSize = DWF.AD2_MAX_BUFFER_SIZE;
 
                     boolean success = true;
                     success = success && _dwf.FDwfAnalogInFrequencySet(SampleFrequency);
@@ -88,9 +97,9 @@ public class AnalogDiscovery2 extends Device {
         _commands.add(new StringCommand("Read_oscilloscope_single_channel") {
             @Override
             protected Object execute(String arg) {
-                int value;
+                int idxCh;
                 try {
-                    value = Integer.valueOf(arg);
+                    idxCh = Integer.valueOf(arg);
                 } catch (Exception e) {
                     if (verbose)
                         e.printStackTrace();
@@ -101,7 +110,7 @@ public class AnalogDiscovery2 extends Device {
                     return null;
 
                 int sampleValid = _dwf.FDwfAnalogInStatusSamplesValid();
-                double[] values = _dwf.FDwfAnalogInStatusData(value, sampleValid);
+                double[] values = _dwf.FDwfAnalogInStatusData(idxCh, sampleValid);
 
                 return values;
             }
@@ -220,6 +229,21 @@ public class AnalogDiscovery2 extends Device {
             }
         });
 
+        addCommand(new StringCommand("Set_power_supply") {
+            @Override
+            protected Object execute(String arg) {
+                try {
+                    String args[] = arg.split(" ");
+                    int idxChannel = Integer.valueOf(args[0]);
+                    double value = Integer.valueOf(args[1]);
+
+                    return _dwf.setPowerSupply(idxChannel, value);
+                } catch (Exception e) {
+                    return false;
+                }
+            }
+        });
+
         addCommand(new StringCommand("Start_wave") {
             @Override
             protected Object execute(String arg) {
@@ -233,6 +257,25 @@ public class AnalogDiscovery2 extends Device {
                     double dutyCycle = Double.valueOf(args[5]);
 
                     return _dwf.startWave(idxChannel, waveform, frequency, amplitude, offset, dutyCycle);
+                } catch (Exception e) {
+                    return false;
+                }
+            }
+        });
+
+        addCommand(new StringCommand("Set_freq_wave") {
+            @Override
+            protected Object execute(String arg) {
+                try {
+                    String args[] = arg.split(" ");
+                    int idxChannel = Integer.valueOf(args[0]);
+                    double frequency = Double.valueOf(args[1]);
+
+                    boolean success = true;
+                    success = success && _dwf.FDwfAnalogOutNodeFrequencySet(idxChannel, frequency);
+                    success = success && _dwf.FDwfAnalogOutConfigure(idxChannel, true);
+
+                    return success;
                 } catch (Exception e) {
                     return false;
                 }
@@ -272,7 +315,7 @@ public class AnalogDiscovery2 extends Device {
     }
 
     public boolean SetTimeBase(double seconds) {
-        return (boolean) executeCommand("Set_time_Base", Double.toString(seconds));
+        return (boolean) executeCommand("Set_time_base", Double.toString(seconds));
     }
 
     public double[] ReadOscilloscopeSingleChannel(int channelIdx) {
@@ -283,10 +326,24 @@ public class AnalogDiscovery2 extends Device {
         return (ArrayList<double[]>) executeCommand("Read_oscilloscope_both_channel", null);
     }
 
-    public boolean SetOscilloscopeTrigger(int channel, double TriggerLevel, double PrefillFrac, int trigCondition,
+    public boolean StartWave(int idxChannel, int waveform, double frequency, double amplitude, double offset,
+            double dutyCycle) {
+        return (boolean) executeCommand("Start_wave",
+                idxChannel + " " + waveform + " " + frequency + " " + amplitude + " " + offset + " " + dutyCycle);
+    }
+
+    public boolean StopWave(int idxChannel) {
+        return (boolean) executeCommand("Stop_wave", Integer.toString(idxChannel));
+    }
+
+    public boolean SetFreqWave(int idxChannel, double freq) {
+        return (boolean) executeCommand("Set_freq_wave", idxChannel + " " + freq);
+    }
+
+    public boolean SetOscilloscopeTrigger(int channel, double TriggerLevel, double TriggerPosSec, int trigCondition,
             double timeoutSec) {
         return (boolean) executeCommand("Set_oscilloscope_trigger",
-                channel + " " + TriggerLevel + " " + PrefillFrac + " " + trigCondition + " " + timeoutSec);
+                channel + " " + TriggerLevel + " " + TriggerPosSec + " " + trigCondition + " " + timeoutSec);
     }
 
     public boolean SetVoltageRange(int channel, double value) {
@@ -297,11 +354,19 @@ public class AnalogDiscovery2 extends Device {
         return (boolean) executeCommand("Stop_oscilloscope_trigger", null);
     }
 
+    public boolean SetPowerSupply(int idxChannel, double value) {
+        return (boolean) executeCommand("Set_power_supply", idxChannel + " " + value);
+    }
+
     public boolean setDCVoltage(int channel, double value) {
         return (boolean) executeCommand("Set_DC_voltage", channel + " " + value);
     }
 
     public boolean digitalWrie(int channel, int value) {
         return (boolean) executeCommand("Digital_write", channel + " " + value);
+    }
+
+    public dwf_extended get_dwf() {
+        return _dwf;
     }
 }

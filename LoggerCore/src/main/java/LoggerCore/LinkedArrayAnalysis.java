@@ -29,6 +29,9 @@ public abstract class LinkedArrayAnalysis extends LinkedAnalysis {
     public Object ExecuteAnalysis(Object newData) {
         final ArrayList<Point2D> _newPoints = ExecuteArrayAnalysis(newData);
 
+        if (_newPoints == null)
+            return null;
+
         if (isRendering())
             return _newPoints;
         else {
