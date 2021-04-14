@@ -21,7 +21,7 @@ public class HarmonicAnalyzerLogger extends LoggerFrameMinimal {
     protected JCheckBoxMenuItem _runningCheckBox;
 
     public HarmonicAnalyzerLogger(Moira moira, VoltageMonitor vm) {
-        super(false, false, true);
+        super(false, false, true, false);
         setTitle("Harmonic Analyzer");
 
         _moira = moira;

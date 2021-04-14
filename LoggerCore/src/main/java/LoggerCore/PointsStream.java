@@ -2,6 +2,8 @@ package LoggerCore;
 
 import org.jfree.data.xy.XYSeries;
 
+import LoggerCore.JFreeChartUtil.JFreeChartUtil;
+
 import java.awt.geom.*;
 import java.awt.EventQueue;
 
@@ -26,11 +28,11 @@ public abstract class PointsStream extends ObjectStream {
 
     @Override
     public Point2D acquireObject() {
-
         final Point2D _newPoint = acquirePoint();
 
         _points.setNotify(false);
-        _points.add(_newPoint.getX(), _newPoint.getY());
+        if (JFreeChartUtil.checkPointValidity(_newPoint))
+            _points.add(_newPoint.getX(), _newPoint.getY());
 
         if (!isRendering()) {
             setflagIsRendering(true);

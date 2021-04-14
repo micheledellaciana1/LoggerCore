@@ -14,12 +14,12 @@ import LoggerCore.Menu.MenuRoutine;
 import LoggerCore.Moira.Analyzer.LissajousAnalysis;
 import LoggerCore.Moira.Analyzer.Frame.AverangeValueLogger;
 import LoggerCore.Moira.Analyzer.Frame.HarmonicAnalyzerLogger;
+import LoggerCore.Moira.Analyzer.Frame.LifeTimeAnalysisLogger;
 import LoggerCore.Moira.Analyzer.Frame.SpectrumAnalyzerLogger;
 import LoggerCore.Moira.SoftwareFollower.CurrentFollower;
 import LoggerCore.Moira.SoftwareFollower.VoltageFollower;
 import LoggerCore.Moira.rouintes.FrequencySweep;
 import LoggerCore.Moira.rouintes.IVCharacteristic;
-import LoggerCore.Moira.rouintes.MeasureLifeTime;
 import LoggerCore.Moira.rouintes.ONOFF;
 import LoggerCore.themal.FeedBackController_type1;
 
@@ -121,6 +121,9 @@ public class MoiraApp extends LoggerFrame {
 
                 HarmonicAnalyzerLogger harmonicAnalyzerLogger = new HarmonicAnalyzerLogger(_moira, _VoltageMonitor);
                 AnalysisMenu.add(harmonicAnalyzerLogger.BuildShowFrameMenuItem());
+
+                LifeTimeAnalysisLogger lifeTimeAnalysisLogger = new LifeTimeAnalysisLogger(_moira, _VoltageMonitor);
+                AnalysisMenu.add(lifeTimeAnalysisLogger.BuildShowFrameMenuItem());
 
                 MenuLoggerFrameFile menuFile = new MenuLoggerFrameFile(_moiraApp, "file");
                 menuFile.add(menuFile.BuildPropertyChartMenu(false));

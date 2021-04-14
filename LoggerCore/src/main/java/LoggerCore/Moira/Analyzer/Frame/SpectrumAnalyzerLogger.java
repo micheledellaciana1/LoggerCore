@@ -21,7 +21,7 @@ public class SpectrumAnalyzerLogger extends LoggerFrameMinimal {
     protected JCheckBoxMenuItem _runningCheckBox;
 
     public SpectrumAnalyzerLogger(AnalogDiscovery2 AD2, VoltageMonitor vm) {
-        super(false, false, true);
+        super(false, false, true, false);
         setTitle("Spectrum Analyzer");
 
         _AD2 = AD2;

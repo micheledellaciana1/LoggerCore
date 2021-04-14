@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.csv.CSVFormat;
@@ -189,6 +190,26 @@ public class DataManger2 {
         XYSeries result = new XYSeries(key, false);
         for (int i = 0; i < x.size(); i++)
             result.add(x.get(i), y.get(i));
+
+        return result;
+    }
+
+    public static XYSeries createHistogram(Comparable<?> key, ArrayList<Double> members, int NumberBinning) {
+        XYSeries result = new XYSeries(key, true);
+
+        double max = Collections.max(members);
+        double min = Collections.min(members);
+
+        double dx = (max - min) / NumberBinning;
+
+        double y;
+        for (double x = min; x <= max; x += dx) {
+            y = 0;
+            for (int i = 0; i < members.size(); i++)
+                if (members.get(i) >= x && members.get(i) <= x + dx)
+                    y++;
+            result.add(x, y);
+        }
 
         return result;
     }

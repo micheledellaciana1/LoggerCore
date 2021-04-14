@@ -1,6 +1,7 @@
 package LoggerCore.Moira;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import LoggerCore.LinkedAnalysis;
 
@@ -22,10 +23,27 @@ public class AutorangeAnalysis extends LinkedAnalysis {
     }
 
     private void autorangeCurrentDUT(double[] voltagesChannel1) {
+
+        if (true) {
+            System.out.println("AutorangeCurrent disabled");
+            return;
+        }
+
+        double threshold = 2;
+        double value = Arrays.stream(voltagesChannel1).max().getAsDouble();
+
+        if (value >= 2.5) {
+            _moira.setGain(_moira.getCurrentGainPGAIndex() - 1);
+            return;
+        }
+
+        double nextGain = _moira.get_CorGains()[_moira.getCurrentGainPGAIndex() + 1];
+        if ((value / _moira.getCurrentGainPGA()) * nextGain < threshold) {
+            _moira.setGain(_moira.getCurrentGainPGAIndex() + 1);
+        }
     }
 
     private void autorangeVoltageDUT(double[] voltagesChannel0) {
-
         boolean setRange25 = false;
         boolean setRange2_5 = false;
 

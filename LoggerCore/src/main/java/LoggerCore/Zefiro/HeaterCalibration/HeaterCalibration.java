@@ -33,8 +33,8 @@ public class HeaterCalibration extends PointsStream {
         _zef = zef;
         _feedbackHeater = feedbackHeater;
 
-        _logger = new LoggerFrameMinimal(false, true, false);
-        _logger.setTitle("IVCharacteristic");
+        _logger = new LoggerFrameMinimal(false, true, false, true);
+        _logger.setTitle("Heater Calibration");
         _logger.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         _logger.addWindowListener(new WindowAdapter() {
             @Override
@@ -84,9 +84,9 @@ public class HeaterCalibration extends PointsStream {
         XYSeries _calibration = new XYSeries(
                 "Calibration" + (int) (Math.round(System.currentTimeMillis() - GlobalVar.start) * 1e-3), false);
         LookUpTable LUT = new LookUpTable(new ArrayList<Double>(), new ArrayList<Double>());
-
-        for (double Temp = Tmin; Temp < Tmax; Temp += 0.5) {
+for (double Temp = Tmin; Temp < Tmax; Temp += 0.5) {
             LUT.get_X().add(Temp);
+
             double correspondingResistance = R0 * (1 + _alpha * Temp + _beta * Temp * Temp)
                     / (1 + _alpha * T0 + _beta * T0 * T0);
             LUT.get_Y().add(correspondingResistance);

@@ -22,6 +22,9 @@ public abstract class LinkedAnalysis {
     }
 
     public void Execute(final Object newData) {
+        if (newData == null)
+            return;
+
         Object DataAnalyzed = ExecuteAnalysis(newData);
         _linkedAnalyzes.fireAnalyzesExecution(DataAnalyzed);
     }

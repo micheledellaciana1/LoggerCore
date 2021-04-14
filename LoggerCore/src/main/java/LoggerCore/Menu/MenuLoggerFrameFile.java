@@ -11,6 +11,7 @@ import javax.swing.UIManager;
 
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.data.xy.XYSeries;
 
 import LoggerCore.GlobalVar;
 import LoggerCore.LoggerFrame;
@@ -159,7 +160,7 @@ public class MenuLoggerFrameFile extends BasicMenu {
         return PropertyChartMenu;
     }
 
-    public JMenuItem BuildEraseSeriesDataItem(String name, boolean ZeroGlobalTime) {
+    public JMenuItem BuildEraseSeriesDataItem(String name, final boolean ZeroGlobalTime) {
         return BuildNoArgMenuItem(new NoInputAction(name, "Erase all data " + _logger.getTitle(),
                 UIManager.getIcon("OptionPane.warningIcon")) {
             public void actionPerformed() {
@@ -167,7 +168,8 @@ public class MenuLoggerFrameFile extends BasicMenu {
                         JOptionPane.WARNING_MESSAGE)) {
                     case 0:
                         _logger.EraseDataSeries();
-                        GlobalVar.start = System.currentTimeMillis();
+                        if (ZeroGlobalTime)
+                            GlobalVar.start = System.currentTimeMillis();
                         break;
                     default:
                         break;
@@ -202,6 +204,30 @@ public class MenuLoggerFrameFile extends BasicMenu {
                         break;
                     default:
                         break;
+                }
+            }
+        });
+    }
+
+    public JMenuItem BuildEraseSelectedSeriesItem(String name) {
+        return BuildArgStringMenuItem(new InputStringAction(name, "Enter: <Series Idx>", name, "0",
+                UIManager.getIcon("OptionPane.warningIcon")) {
+            @Override
+            public void actionPerformed(String input) {
+                try {
+                    String[] idx = input.split(" ");
+                    Comparable[] keys = new String[idx.length];
+
+                    for (int i = 0; i < keys.length; i++)
+                        keys[i] = _logger.getLoadedDataset().getSeriesKey(Integer.valueOf(idx[i]));
+
+                    for (Comparable comparable : keys) {
+                        XYSeries series = _logger.getLoadedDataset().getSeries(comparable);
+                        _logger.getDisplayedDataset().removeSeries(series);
+                        _logger.getLoadedDataset().removeSeries(series);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         });

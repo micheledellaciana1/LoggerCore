@@ -55,9 +55,7 @@ public class VoltageCurrentSensorMonitor extends ObjectStream {
     public Object acquireObject() {
         _voltage = _zef.readVoltageFallSensor();
         _current = _zef.readCurrentSensor();
-
-        if (_current != 0)
-            _resistance = _voltage / _current;
+        _resistance = _voltage / _current;
 
         return (System.currentTimeMillis() - GlobalVar.start) * 1e-3;
     }

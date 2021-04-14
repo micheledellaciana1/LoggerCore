@@ -29,7 +29,7 @@ public abstract class LoggerFrameSweep extends PointsStream {
 
         _AnalysisLinkedToSweep = new LinkedAnalysisCollection();
 
-        _logger = new LoggerFrameMinimal(false, true, false);
+        _logger = new LoggerFrameMinimal(false, true, false, true);
         _logger.setTitle(name);
         _logger.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         _logger.addWindowListener(new WindowAdapter() {

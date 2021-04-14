@@ -17,7 +17,7 @@ public class LinearFitFrame extends LoggerFrameMinimal {
     protected JCheckBoxMenuItem _runningCheckBox;
 
     public LinearFitFrame(LinkedAnalysisCollection linkedCollection) {
-        super(false, false, true);
+        super(false, false, true, false);
         setTitle("Linear Fit");
 
         _linkedCollection = linkedCollection;
@@ -33,6 +33,7 @@ public class LinearFitFrame extends LoggerFrameMinimal {
         _runningCheckBox = BuildRunAnalyzerCheckBoxItem();
         getJMenuBar().add(_runningCheckBox);
 
+        addToAutosave("LinearFitCharacteristic");
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
             @Override

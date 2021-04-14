@@ -52,9 +52,10 @@ public class LoggerFrame extends JFrame {
             }
         });
 
-        _plot.getRenderer().setDefaultToolTipGenerator(new StandardXYToolTipGenerator());
+        _plot.getRenderer().setDefaultToolTipGenerator(null);
 
         _chart = new JFreeChart(null, getFont(), _plot, true);
+
         JFreeChartUtil.AlternativeThemeLight(_chart);
 
         NumberAxis yAxis = (NumberAxis) _plot.getRangeAxis();
@@ -132,6 +133,7 @@ public class LoggerFrame extends JFrame {
     }
 
     public void DisplayXYSeries(XYSeries serie) {
+
         for (int i = 0; i < _loadedDataset.getSeriesCount(); i++)
             if (_loadedDataset.getSeries(i).equals(serie)) {
                 DisplayXYSeries(i);

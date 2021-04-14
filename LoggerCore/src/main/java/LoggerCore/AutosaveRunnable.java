@@ -18,6 +18,7 @@ public class AutosaveRunnable extends StoppableRunnable {
 
     private AutosaveRunnable() {
         super();
+        _name = "Autosave";
         _LoggerFrames = new ArrayList<LoggerFrame>();
         _CorFolder = new ArrayList<File>();
     }

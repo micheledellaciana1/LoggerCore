@@ -4,6 +4,8 @@ import java.util.ArrayList;
 
 import org.jfree.data.xy.XYSeries;
 
+import LoggerCore.JFreeChartUtil.JFreeChartUtil;
+
 import java.awt.geom.*;
 import java.awt.*;
 
@@ -29,21 +31,18 @@ public abstract class LinkedArrayAnalysis extends LinkedAnalysis {
     public Object ExecuteAnalysis(Object newData) {
         final ArrayList<Point2D> _newPoints = ExecuteArrayAnalysis(newData);
 
-        if (_newPoints == null)
-            return null;
-
         if (isRendering())
             return _newPoints;
         else {
             setflagIsRendering(true);
-
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
                     _points.setNotify(false);
                     _points.clear();
                     for (int i = 0; i < _newPoints.size(); i++)
-                        _points.add(_newPoints.get(i).getX(), _newPoints.get(i).getY());
+                        if (JFreeChartUtil.checkPointValidity(_newPoints.get(i)))
+                            _points.add(_newPoints.get(i).getX(), _newPoints.get(i).getY());
                     _points.setNotify(true);
                     setflagIsRendering(false);
                 }

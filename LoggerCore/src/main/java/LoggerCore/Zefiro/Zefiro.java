@@ -45,7 +45,8 @@ public class Zefiro extends SerialDevice {
 
             @Override
             protected Object executeSimulation(Object arg) {
-                return 4 * _voltageSensorDAC + (Math.random() - 0.5);
+                return 1 * Math.pow(Math.abs(_voltageSensorDAC), 1.5) * Math.signum(_voltageSensorDAC)
+                        + (Math.random() - 0.005);
             }
         });
 
@@ -117,6 +118,21 @@ public class Zefiro extends SerialDevice {
             @Override
             protected Object executeSimulation(Object arg) {
                 return 12 + _CurrentHeater + Math.random();
+            }
+        });
+
+        addCommand(new Command("ReadHeaterResistance_withExitation_ENHANCED") {
+            @Override
+            protected Object execute(Object arg) {
+                double extitationCurrent = Double.class.cast(arg);
+                _serialBuffer.println("ReadHeaterResistance_withExitation_ENHANCED");
+                _serialBuffer.println(Double.toString(extitationCurrent));
+                return Double.valueOf(_serialBuffer.WaitToReadLine());
+            }
+
+            @Override
+            protected Object executeSimulation(Object arg) {
+                return 11 + _CurrentHeater + Math.random();
             }
         });
 

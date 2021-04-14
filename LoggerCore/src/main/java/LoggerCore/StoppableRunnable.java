@@ -27,6 +27,14 @@ public abstract class StoppableRunnable implements Runnable {
         _ExecutionDelay2 = executionDelay;
     }
 
+    public void set_firstDelay(boolean _firstDelay) {
+        this._firstDelay = _firstDelay;
+    }
+
+    public void set_secondDelay(boolean _secondDelay) {
+        this._secondDelay = _secondDelay;
+    }
+
     public int getExecutionDelay() {
         return _ExecutionDelay;
     }

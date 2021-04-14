@@ -1,6 +1,7 @@
 package LoggerCore.JFreeChartUtil;
 
 import java.awt.*;
+import java.awt.geom.*;
 
 import org.jfree.chart.JFreeChart;
 
@@ -70,5 +71,24 @@ public class JFreeChartUtil {
         chart.getXYPlot().setOutlinePaint(ColorThing);
         chart.setBackgroundPaint(ColorBackGroundChart);
         chart.getXYPlot().setBackgroundPaint(ColorBackGroundPlot);
+    }
+
+    public static boolean checkPointValidity(Point2D p) {
+        if (p == null)
+            return false;
+
+        if (Double.isNaN(p.getX()))
+            return false;
+
+        if (Double.isNaN(p.getY()))
+            return false;
+
+        if (Double.isInfinite(p.getX()))
+            return false;
+
+        if (Double.isInfinite(p.getY()))
+            return false;
+
+        return true;
     }
 }

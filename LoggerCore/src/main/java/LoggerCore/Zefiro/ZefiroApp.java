@@ -28,10 +28,16 @@ import LoggerCore.Menu.MenuLoggerFrameFile;
 import LoggerCore.Menu.MenuRoutine;
 import LoggerCore.Zefiro.FastChannelMonitor.FastChannelMonitor;
 import LoggerCore.Zefiro.HeaterCalibration.HeaterCalibration;
+import LoggerCore.Zefiro.HeaterCalibration.HeaterResistanceEnhanced;
+import LoggerCore.Zefiro.ITCharacteristic.FrameThermalRecepie;
 import LoggerCore.Zefiro.ITCharacteristic.ITCharacteristic;
+import LoggerCore.Zefiro.ITCharacteristic.TemperatureSweep;
+import LoggerCore.Zefiro.ITCharacteristic.TemperatureWithTimer;
 import LoggerCore.Zefiro.IVCharacteristic.IVCharacteristic;
+import LoggerCore.Zefiro.IVCharacteristic.VoltageSweep;
 import LoggerCore.Zefiro.SoftwareFollower.CurrentFollower;
 import LoggerCore.Zefiro.SoftwareFollower.VoltageFollower;
+import LoggerCore.Zefiro.WatchDog.ChamberTempDog;
 import LoggerCore.themal.FeedBackController_type1;
 import LoggerCore.themal.FeedBackController_type2;
 import LoggerCore.themal.LookUpTable;
@@ -128,6 +134,10 @@ public class ZefiroApp extends LoggerFrame {
                 _ChamberMonitor.setExecutionDelay(_configFile.searchInteger("DelayChamberAcq"));
                 _ChamberMonitor.setName("Chamber monitor");
 
+                ChamberTempDog CtempDog = new ChamberTempDog(_feedBackController,
+                                _configFile.searchInteger("MaxChamberTemperature"));
+                _ChamberMonitor.get_TempMonitor().getLinkedAnalysisCollection().add(CtempDog);
+
                 addXYSeries(_sensorMonitor.getVoltageSeries(), "time[sec]", "Voltage[V]");
                 addXYSeries(_sensorMonitor.getCurrentSeries(), "time[sec]", "Current[mA]");
                 addXYSeries(_sensorMonitor.getResistanceSeries(), "time[sec]", "Resistance[kOhm]");
@@ -185,14 +195,15 @@ public class ZefiroApp extends LoggerFrame {
                 JMenu subMenuSet = new JMenu("Set");
                 subMenuGeneral.add(DeviceMenu.BuildNoArgCommandItem("Reset", "Reset"));
                 subMenuGeneral.add(DeviceMenu.BuildDeviceMonitorFrame("Zefiro status", "Zefiro"));
-                JMenu subMenuSetAcq = new JMenu("Acquisition");
 
+                JMenu subMenuSetAcq = new JMenu("Acquisition");
                 subMenuSetAcq.add(DeviceMenu.BuildStringCommandItem("Set average time", "Enter: <AverageTimeMillis>",
                                 "10"));
                 subMenuSetAcq.add(DeviceMenu.BuildStringCommandItem("Set AmpMeter Idx",
                                 "Enter: <IdxRefResistorAmpCurrent>", "0"));
 
                 subMenuGeneral.add(subMenuSetAcq);
+
                 DeviceMenu.add(subMenuGeneral);
                 subMenuSet.add(DeviceMenu.BuildSliderCommandItem("Set DAC voltage sensor [V]", "Set DAC voltage sensor",
                                 _configFile.searchDouble("MinVoltageDAC"), _configFile.searchDouble("MaxVoltageDAC"),
@@ -207,19 +218,48 @@ public class ZefiroApp extends LoggerFrame {
                 DeviceMenu.add(subMenuSet);
                 DeviceMenu.add(menuFeedback);
 
-                MenuRoutine mr = new MenuRoutine("Routine");
-                String DefIVChArgs = _configFile.search("DefIVChArgs");
-                mr.add(mr.BuildStringRoutineItem("IVCharacteristic", new IVCharacteristic(_zef),
-                                "Enter: <VStart> <VStop> <VStep> <NCycle> <Up&Down> <delay>", DefIVChArgs));
+                JMenu mr = new JMenu("Routine");
+                JMenu menuRecepie = new JMenu("Recepies");
+                FrameThermalRecepie ftr = new FrameThermalRecepie(_feedBackController);
+                menuRecepie.add(ftr.BuildDisplayFrameMenuItem("Open thermal recepie frame"));
+                mr.add(menuRecepie);
+                MenuRoutine routineThermal = new MenuRoutine("Routine thermal");
                 String DefITChArgs = _configFile.search("DefITChArgs");
-                mr.add(mr.BuildStringRoutineItem("ITCharacteristic", new ITCharacteristic(_zef, _feedBackController),
+                routineThermal.add(routineThermal.BuildStringRoutineItem("ITCharacteristic",
+                                new ITCharacteristic(_zef, _feedBackController),
                                 "Enter: <TStart> <TStop> <TStep> <NCycle> <Up&Down> <delay>", DefITChArgs));
-                mr.add(mr.BuildStringRoutineItem("Calibrate Heater", new HeaterCalibration(_zef, _feedBackController),
+                String DefTSweep = _configFile.search("DefTSweep");
+                routineThermal.add(routineThermal.BuildStringRoutineItem("Temperature sweep",
+                                new TemperatureSweep(_feedBackController),
+                                "Enter: <TStart> <TStop> <TStep> <NCycle> <Up&Down> <delay>", DefTSweep));
+                routineThermal.add(routineThermal.BuildStringRoutineItem("Temperature with timer",
+                                new TemperatureWithTimer(_feedBackController),
+                                "Enter: <TargetTemperature> <TimeToStayInMinutes>", "500 1"));
+                routineThermal.add(routineThermal.BuildStringRoutineItem("Calibrate Heater",
+                                new HeaterCalibration(_zef, _feedBackController),
                                 "Enter: <ExitationCurrent> <NAverage> <Delay> <Alpha> <Beta>",
                                 _configFile.search("DefHeaterCalibArgs")));
-                mr.add(mr.BuildStringRoutineItem("Fast Channel Monitor", new FastChannelMonitor(_zef),
-                                "Enter: <AnalogChannel> <NPoints>", "31 1000"));
-                mr.add(mr.BuildStopRoutineItem());
+                routineThermal.add(routineThermal.BuildStringRoutineItem("Heater resistance (ENHANCED)",
+                                new HeaterResistanceEnhanced(_zef), "Enter: <ExitationCurrent>", "200"));
+                routineThermal.add(routineThermal.BuildStopRoutineItem());
+                mr.add(routineThermal);
+
+                MenuRoutine routinePotential = new MenuRoutine("Routine potential");
+                String DefIVChArgs = _configFile.search("DefIVChArgs");
+                routinePotential.add(routinePotential.BuildStringRoutineItem("IVCharacteristic",
+                                new IVCharacteristic(_zef),
+                                "Enter: <VStart> <VStop> <VStep> <NCycle> <Up&Down> <delay>", DefIVChArgs));
+                String DefVSweep = _configFile.search("DefVSweep");
+                routinePotential.add(routinePotential.BuildStringRoutineItem("Voltage sweep", new VoltageSweep(_zef),
+                                "Enter: <VStart> <VStop> <VStep> <NCycle> <Up&Down> <delay>", DefVSweep));
+                routinePotential.add(routinePotential.BuildStopRoutineItem());
+                mr.add(routinePotential);
+
+                MenuRoutine routineDebug = new MenuRoutine("Routine debug");
+                routineDebug.add(routineDebug.BuildStringRoutineItem("Fast Channel Monitor",
+                                new FastChannelMonitor(_zef), "Enter: <AnalogChannel> <NPoints>", "31 1000"));
+                routineDebug.add(routineDebug.BuildStopRoutineItem());
+                mr.add(routineDebug);
 
                 MenuLoggerFrameExportTxtFile menuExport = new MenuLoggerFrameExportTxtFile(this, "Export .txt");
                 JMenu subMenuCharacterizationExp = menuExport.BuildSubMenu("Characterization", new int[] { 0, 1, 2 });
@@ -253,8 +293,9 @@ public class ZefiroApp extends LoggerFrame {
                 _tm.add(_ChamberMonitor);
                 _tm.add(_LEDcurrentMonitor);
 
+                addToAutosave("ZefiroMonitor");
+
                 if (Boolean.valueOf(_configFile.search("Autosave"))) {
-                        AutosaveRunnable.getInstance().addDataset(this, "ZefiroMonitor");
                         _tm.add(AutosaveRunnable.getInstance());
                 }
 

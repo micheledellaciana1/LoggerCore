@@ -26,7 +26,7 @@ public class MeasureLifeTime extends StoppableRunnable {
         _firstDelay = true;
         _secondDelay = true;
 
-        LoggerFrameMinimal _loggerMinimal = new LoggerFrameMinimal(true, false, false);
+        LoggerFrameMinimal _loggerMinimal = new LoggerFrameMinimal(true, false, false, false);
         _loggerMinimal.get_menuFile().add(_loggerMinimal.get_menuFile().BuildEraseSeriesDataItem("Erase data", false));
         _logger = _loggerMinimal;
 
@@ -43,7 +43,7 @@ public class MeasureLifeTime extends StoppableRunnable {
         _VoltageMonitor.getLinkedAnalysisCollection().add(_LifeTimeAnalysis);
 
         double trgLevel = _moira.convertToCurrent(0.05);
-        _moira.SetOscilloscopeTrigger(0, 1, 0, 0, 0);
+        _moira.SetOscilloscopeTrigger(0, trgLevel, 0, 0, 0);
         _logger.setVisible(true);
 
         return super.setup(arg);

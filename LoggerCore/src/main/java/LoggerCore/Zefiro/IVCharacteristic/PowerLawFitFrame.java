@@ -17,7 +17,7 @@ public class PowerLawFitFrame extends LoggerFrameMinimal {
     protected JCheckBoxMenuItem _runningCheckBox;
 
     public PowerLawFitFrame(LinkedAnalysisCollection linkedCollection) {
-        super(false, false, true);
+        super(false, false, true, false);
         setTitle("Power Law Fit");
 
         _linkedCollection = linkedCollection;
@@ -33,6 +33,7 @@ public class PowerLawFitFrame extends LoggerFrameMinimal {
         _runningCheckBox = BuildRunAnalyzerCheckBoxItem();
         getJMenuBar().add(_runningCheckBox);
 
+        addToAutosave("PowerFitCharacteristic");
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
             @Override

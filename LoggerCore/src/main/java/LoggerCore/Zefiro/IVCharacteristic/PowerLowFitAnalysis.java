@@ -16,7 +16,7 @@ public class PowerLowFitAnalysis extends LinkedArrayAnalysis {
 
     private LinkedPointAnalysis _kAnalysis;
     private LinkedPointAnalysis _alphaAnalysis;
-    private SimpleCurveFitter _fitter;
+    private ParametricUnivariateFunction _func;
 
     public PowerLowFitAnalysis() {
         super("Fitting error");
@@ -36,7 +36,7 @@ public class PowerLowFitAnalysis extends LinkedArrayAnalysis {
         };
         getLinkedAnalysisCollection().add(_alphaAnalysis);
 
-        _fitter = SimpleCurveFitter.create(new ParametricUnivariateFunction() {
+        _func = new ParametricUnivariateFunction() {
 
             @Override
             public double value(double x, double... parameters) {
@@ -45,18 +45,18 @@ public class PowerLowFitAnalysis extends LinkedArrayAnalysis {
 
             @Override
             public double[] gradient(double x, double... parameters) {
-                double d0 = Math.pow(x, parameters[1]);
-                double d1 = parameters[0] * parameters[1] * Math.pow(x, parameters[1] - 1);
-
-                return new double[] { d0, d1 };
+                double[] grad = new double[2];
+                grad[0] = Math.pow(x, parameters[1]);
+                grad[1] = parameters[0] * Math.pow(x, parameters[1]) * Math.log(x);
+                return grad;
             }
-
-        }, new double[] { 1, 1 });
+        };
     }
 
     private double _k;
     private double _alpha;
     private double _time;
+    private double[] _par = new double[] { 1, 1 };
 
     @Override
     public ArrayList<Point2D> ExecuteArrayAnalysis(Object newData) {
@@ -64,22 +64,22 @@ public class PowerLowFitAnalysis extends LinkedArrayAnalysis {
 
         ArrayList<WeightedObservedPoint> points = new ArrayList<WeightedObservedPoint>();
         for (int i = 0; i < curve.getItemCount(); i++) {
-            double x = curve.getX(i).doubleValue();
-            double y = curve.getY(i).doubleValue();
+            double x = Math.abs(curve.getX(i).doubleValue());
+            double y = Math.abs(curve.getY(i).doubleValue());
             points.add(new WeightedObservedPoint(1, Math.abs(x), Math.abs(y)));
         }
 
-        double[] par = _fitter.fit(points);
+        _par = SimpleCurveFitter.create(_func, _par).fit(points);
 
-        _k = par[0];
-        _alpha = par[1];
+        _k = _par[0];
+        _alpha = _par[1];
         _time = (System.currentTimeMillis() - GlobalVar.start) * 1e-3;
 
         ArrayList<Point2D> _error = new ArrayList<Point2D>();
         for (int i = 0; i < curve.getItemCount(); i++) {
             double x = curve.getX(i).doubleValue();
             double y = curve.getY(i).doubleValue();
-            double yEstimated = Math.pow(Math.abs(x), _alpha) * _k * Math.signum(x);
+            double yEstimated = _func.value(Math.abs(x), _par) * Math.signum(x);
             _error.add(new Point2D.Double(x, y - yEstimated));
         }
 

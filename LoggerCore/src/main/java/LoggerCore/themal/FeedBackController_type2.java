@@ -62,6 +62,10 @@ public class FeedBackController_type2 implements IFeedbackController {
         _timeLastCall = currentTime;
 
         double error = _target_value - measuredValue;
+
+        if (Math.abs(error) < TOLLERATED_ERROR)
+            return actual_responce;
+
         _integralError += error * deltaTime;
         if (_integralError < 0)
             _integralError = 0;
@@ -121,7 +125,9 @@ public class FeedBackController_type2 implements IFeedbackController {
         return _target_value;
     }
 
+    private double TOLLERATED_ERROR = 0;
+
     public void setTolleratedError(double tolleratedError) {
-        // todo
+        TOLLERATED_ERROR = tolleratedError;
     }
 }

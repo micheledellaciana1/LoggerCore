@@ -2,6 +2,8 @@ package LoggerCore;
 
 import org.jfree.data.xy.XYSeries;
 
+import LoggerCore.JFreeChartUtil.JFreeChartUtil;
+
 import java.awt.EventQueue;
 import java.awt.geom.*;
 import java.util.ArrayList;
@@ -32,14 +34,15 @@ public abstract class PointsArrayStream extends ObjectStream {
             return _newPoints;
         else {
             setflagIsRendering(true);
-
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
                     _points.setNotify(false);
                     _points.clear();
-                    for (int i = 0; i < _newPoints.size(); i++)
-                        _points.add(_newPoints.get(i).getX(), _newPoints.get(i).getY());
+                    for (int i = 0; i < _newPoints.size(); i++) {
+                        if (JFreeChartUtil.checkPointValidity(_newPoints.get(i)))
+                            _points.add(_newPoints.get(i).getX(), _newPoints.get(i).getY());
+                    }
                     _points.setNotify(true);
                     setflagIsRendering(false);
                 }

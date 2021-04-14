@@ -5,6 +5,8 @@ import java.awt.EventQueue;
 
 import org.jfree.data.xy.XYSeries;
 
+import LoggerCore.JFreeChartUtil.JFreeChartUtil;
+
 public abstract class LinkedPointAnalysis extends LinkedAnalysis {
     XYSeries _points;
     private volatile boolean _flagIsRendering = false;
@@ -25,11 +27,10 @@ public abstract class LinkedPointAnalysis extends LinkedAnalysis {
     @Override
     public Point2D ExecuteAnalysis(final Object newData) {
         final Point2D _ExtractedPoint = ExecutePointAnalysis(newData);
-        if (_ExtractedPoint == null)
-            return null;
 
         _points.setNotify(false);
-        _points.add(_ExtractedPoint.getX(), _ExtractedPoint.getY());
+        if (JFreeChartUtil.checkPointValidity(_ExtractedPoint))
+            _points.add(_ExtractedPoint.getX(), _ExtractedPoint.getY());
 
         if (!isRendering()) {
             setflagIsRendering(true);

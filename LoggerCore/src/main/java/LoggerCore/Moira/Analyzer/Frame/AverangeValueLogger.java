@@ -23,7 +23,7 @@ public class AverangeValueLogger extends LoggerFrameMinimal {
     protected JCheckBoxMenuItem _runningCheckBox;
 
     public AverangeValueLogger(Moira Moira, VoltageMonitor vm) {
-        super(true, false, true);
+        super(false, false, true, false);
         setTitle("Averange values");
         _Moira = Moira;
         _vm = vm;

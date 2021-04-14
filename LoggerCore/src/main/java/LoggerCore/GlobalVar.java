@@ -1,5 +1,6 @@
 package LoggerCore;
 
+import java.awt.geom.*;
 import org.apache.commons.csv.CSVFormat;
 
 public class GlobalVar {

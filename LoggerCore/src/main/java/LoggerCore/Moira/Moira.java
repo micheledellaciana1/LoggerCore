@@ -211,8 +211,21 @@ public class Moira extends AnalogDiscovery2 {
         return voltage / (_shuntResistor * _CorGains[_MuxPGA.get_selectedLine()]);
     }
 
+    public double[] get_CorGains() {
+        return _CorGains;
+    }
+
     public double getCurrentGainPGA() {
         return _CorGains[_MuxPGA.get_selectedLine()];
+    }
+
+    public int getCurrentGainPGAIndex() {
+        return _MuxPGA.get_selectedLine();
+    }
+
+    public double setGain(int index) {
+        _MuxPGA.selectLine(index);
+        return getCurrentGainPGA();
     }
 
     private class muxMAX338 {

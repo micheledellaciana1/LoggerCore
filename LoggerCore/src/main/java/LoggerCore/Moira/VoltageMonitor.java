@@ -18,8 +18,8 @@ public class VoltageMonitor extends ObjectStream {
     public VoltageMonitor(Comparable<?> keyVoltageCh1, Comparable<?> keyVoltageCh2, AnalogDiscovery2 AD2) {
         super();
         _AD2 = AD2;
-        _VoltageCh1 = new XYSeries(keyVoltageCh1);
-        _VoltageCh2 = new XYSeries(keyVoltageCh2);
+        _VoltageCh1 = new XYSeries(keyVoltageCh1, false);
+        _VoltageCh2 = new XYSeries(keyVoltageCh2, false);
     }
 
     private synchronized void setflagIsRendering(boolean newValue) {

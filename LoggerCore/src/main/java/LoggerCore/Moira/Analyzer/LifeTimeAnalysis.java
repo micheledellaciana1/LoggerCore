@@ -3,17 +3,17 @@ package LoggerCore.Moira.Analyzer;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
+import org.apache.commons.math3.fitting.SimpleCurveFitter;
 import org.apache.commons.math3.fitting.WeightedObservedPoint;
+import org.apache.commons.math3.stat.regression.SimpleRegression;
 
-import LoggerCore.LinkedArrayAnalysis;
+import LoggerCore.GlobalVar;
 import LoggerCore.LinkedPointAnalysis;
 import LoggerCore.Moira.Moira;
 
 public class LifeTimeAnalysis extends LinkedPointAnalysis {
 
     protected Moira _moira;
-    protected double _xLowPercent;
-    protected double _xHighPercent;
 
     public LifeTimeAnalysis(String Name, Moira moira) {
         super(Name);
@@ -26,14 +26,20 @@ public class LifeTimeAnalysis extends LinkedPointAnalysis {
 
         ArrayList<double[]> values = (ArrayList<double[]>) newData;
 
-        ArrayList<WeightedObservedPoint> VoltageValues = new ArrayList<WeightedObservedPoint>();
+        double startingCurrentValue = values.get(1)[0];
+        int indexOff = 0;
 
-        int idxLow = (int) (_xLowPercent * values.get(0).length);
-        int idxHigh = (int) (_xHighPercent * values.get(0).length);
+        for (int i = 0; i < values.get(1).length; i++)
+            if (values.get(i)[i] / startingCurrentValue < 0.01) {
+                indexOff = i;
+                break;
+            }
 
-        for (int i = idxLow; i < idxHigh; i++)
-            VoltageValues.add(new WeightedObservedPoint(1, i * dt, values.get(0)[i]));
+        SimpleRegression sr = new SimpleRegression(true);
 
-        return new Point2D.Double();
+        for (int i = indexOff; i < values.get(0).length; i++)
+            sr.addData(i * dt, values.get(0)[i]);
+
+        return new Point2D.Double((System.currentTimeMillis() - GlobalVar.start) * 1e-3, sr.getSlope());
     }
 }

@@ -66,4 +66,16 @@ public class ChamberMonitor extends ObjectStream {
     public XYSeries getOxygenSeries() {
         return _OxygenMonitor.getSeries();
     }
+
+    public LinkedPointAnalysis get_TempMonitor() {
+        return _TempMonitor;
+    }
+
+    public LinkedPointAnalysis get_RHMonitor() {
+        return _RHMonitor;
+    }
+
+    public LinkedPointAnalysis get_OxygenMonitor() {
+        return _OxygenMonitor;
+    }
 }
