@@ -14,6 +14,7 @@ import LoggerCore.themal.LookUpTable;
 public class Icaro extends SerialDevice {
 
     protected double _VoltageHeater;
+
     protected int _ADCAvegMillis;
 
     protected LookUpTable _LUTHeater;
@@ -48,6 +49,31 @@ public class Icaro extends SerialDevice {
                     return false;
                 }
 
+                return true;
+            }
+        });
+
+        OverrideCommand("Reset", new Command("Reset") {
+            @Override
+            protected Object execute(Object arg) {
+                _serialBuffer.println("Reset");
+                _VoltageHeater = 0;
+                return null;
+            }
+        });
+        addCommand(new StringCommand("Set_DAC_Pt100_Voltage") {
+            @Override
+            protected Object execute(String arg) {
+                try {
+                    Double.valueOf(arg);
+                } catch (Exception e) {
+                    if (verbose)
+                        e.printStackTrace();
+                    return false;
+                }
+
+                _serialBuffer.println("Set_DAC_Pt100_Voltage");
+                _serialBuffer.println(arg);
                 return true;
             }
         });

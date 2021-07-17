@@ -3,6 +3,7 @@ package LoggerCore.Moira;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import LoggerCore.Configuration;
 import LoggerCore.Communication.Command;
 import LoggerCore.Communication.StringCommand;
 
@@ -15,9 +16,13 @@ public class Moira extends AnalogDiscovery2 {
     private double[] _CorGains;
     private double _shuntResistor;
 
+    private double[] _gainDACs;
+
     private boolean _offsetCorrection;
     private double _offsetOpAmpIC2_IC3 = 0;
     private double _offsetOpAmpIC4 = 0;
+
+    private Configuration _configFile;
 
     private MoiraState _state;
 
@@ -43,23 +48,35 @@ public class Moira extends AnalogDiscovery2 {
         _state = State;
     }
 
-    public Moira(boolean OffsetCorrection) {
+    public Moira(Configuration configFile) {
         super();
-        _offsetCorrection = OffsetCorrection;
+        _configFile = configFile;
+        _offsetCorrection = _configFile.searchBoolean("OffsetCorrection");
+        _gainDACs = new double[] { _configFile.searchDouble("AmplificationDAC0"),
+                _configFile.searchDouble("AmplificationDAC1") };
         OverrideCommand("Open", new Command("Open") {
             @Override
             protected Object execute(Object arg) {
                 boolean success = _dwf.FDwfDeviceOpen();
-                setOscilloscope(1e-3, 2.5, 2.5);
+                SetPowerSupply(0, _configFile.searchDouble("StartingPowerSupply0"));
+                SetPowerSupply(1, _configFile.searchDouble("StartingPowerSupply1"));
+
+                setOscilloscope(_configFile.searchDouble("StartingTimeBaseSec"), 2.5, 2.5);
 
                 if (_offsetCorrection)
                     InitOffsets();
 
-                success = success && _MuxPGA.selectLine(0);
-                success = success && _MuxGR.selectLine(0);
-                success = success && _MuxGR.disable();
+                success = success && _MuxPGA.selectLine(_configFile.searchInteger("StartingPGAIndex"));
+                success = success && _MuxGR.selectLine(_configFile.searchInteger("StartingRGIndex"));
+                success = success && _MuxGR.enable();
                 success = success && SetSwitch(true);
                 return success;
+            }
+
+            @Override
+            protected Object executeSimulation(Object arg) {
+                SetTimeBase(_configFile.searchDouble("StartingTimeBaseSec"));
+                return true;
             }
         });
 
@@ -76,8 +93,25 @@ public class Moira extends AnalogDiscovery2 {
                 if (_offsetCorrection)
                     for (int i = 0; i < sampleValid; i++) {
                         values0[i] -= _offsetOpAmpIC2_IC3;
-                        values1[i] -= _offsetOpAmpIC4;
+                        values1[i] -= _offsetOpAmpIC4 * getCurrentGainPGA();
                     }
+
+                ArrayList<double[]> values = new ArrayList<double[]>();
+                values.add(values0);
+                values.add(values1);
+
+                return values;
+            }
+
+            @Override
+            protected Object executeSimulation(Object arg) {
+                double[] values0 = new double[1024];
+                double[] values1 = new double[1024];
+
+                for (int i = 0; i < values0.length; i++) {
+                    values0[i] = Math.random();
+                    values1[i] = Math.random();
+                }
 
                 ArrayList<double[]> values = new ArrayList<double[]>();
                 values.add(values0);
@@ -125,12 +159,34 @@ public class Moira extends AnalogDiscovery2 {
                 return values;
             }
         });
+
+        OverrideCommand("Set_DC_voltage", new StringCommand("Set_DC_voltage") {
+            @Override
+            protected Object execute(String arg) {
+                String par[] = arg.split(" ");
+                int idxChannel;
+                double value;
+                try {
+                    idxChannel = Integer.valueOf(par[0]);
+                    value = Double.valueOf(par[1]);
+                } catch (Exception e) {
+                    if (verbose)
+                        e.printStackTrace();
+                    return false;
+                }
+
+                _dwf.FDwfAnalogOutConfigure(idxChannel, false);
+                boolean success = _dwf.FDwfAnalogOutNodeOffsetSet(idxChannel, value / _gainDACs[idxChannel]);
+                return success;
+            }
+        });
         addCommand(new Command("Init_offsets") {
             @Override
             protected Object execute(Object arg) {
                 _offsetOpAmpIC2_IC3 = 0;
                 _offsetOpAmpIC4 = 0;
 
+                _offsetCorrection = true;
                 boolean success = SetSwitch(false);
                 success = success && _MuxGR.enable();
                 success = success && _MuxGR.selectLine(0);
@@ -138,21 +194,26 @@ public class Moira extends AnalogDiscovery2 {
 
                 try {
                     Thread.sleep(1000);
-                    ArrayList<double[]> values = ReadOscilloscopeBothChannel();
-
-                    double avgVoltage1 = Arrays.stream(values.get(0)).average().getAsDouble();
-                    double avgVoltage2 = Arrays.stream(values.get(1)).average().getAsDouble();
-
-                    _offsetOpAmpIC2_IC3 = avgVoltage1;
-                    _offsetOpAmpIC4 = avgVoltage2 / getCurrentGainPGA();
-
-                    System.out.println("OffsetOpAmpIC2_IC3: " + _offsetOpAmpIC2_IC3);
-                    System.out.println("OffsetOpAmpIC4: " + _offsetOpAmpIC2_IC3);
-
-                    return success;
+                    while (ReadOscilloscopeBothChannel() == null) {
+                    }
                 } catch (InterruptedException e) {
-                    return false;
                 }
+
+                ArrayList<double[]> values = null;
+
+                while (values == null)
+                    values = ReadOscilloscopeBothChannel();
+
+                double avgVoltage1 = Arrays.stream(values.get(0)).average().getAsDouble();
+                double avgVoltage2 = Arrays.stream(values.get(1)).average().getAsDouble();
+
+                _offsetOpAmpIC2_IC3 = avgVoltage1;
+                _offsetOpAmpIC4 = avgVoltage2 / getCurrentGainPGA();
+
+                System.out.println("OffsetOpAmpIC2_IC3: " + _offsetOpAmpIC2_IC3);
+                System.out.println("OffsetOpAmpIC4: " + _offsetOpAmpIC2_IC3);
+
+                return success;
             }
         });
         addCommand(new Command("Set_current_gain") {
@@ -167,12 +228,12 @@ public class Moira extends AnalogDiscovery2 {
             }
         });
 
-        addCommand(new Command("Set_current_gain") {
+        addCommand(new Command("Set_shunt_resistor") {
             @Override
             protected Object execute(Object arg) {
                 try {
                     int idx = Integer.valueOf(String.class.cast(arg));
-                    return _MuxPGA.selectLine(idx);
+                    return _MuxGR.selectLine(idx);
                 } catch (Exception e) {
                     return false;
                 }
@@ -183,19 +244,23 @@ public class Moira extends AnalogDiscovery2 {
             @Override
             protected Object execute(Object arg) {
                 boolean value = Boolean.parseBoolean(arg.toString());
+
                 if (value)
-                    return digitalWrie(_switchGPIO, 1);
-                else
                     return digitalWrie(_switchGPIO, 0);
+                else
+                    return digitalWrie(_switchGPIO, 1);
             }
         });
 
         _switchGPIO = 7;
         _MuxPGA = new muxMAX338(1, 8, 0, -1);
         _MuxGR = new muxMAX338(2, 11, 10, 9);
-        _CorGains = new double[] { 1, 2, 4, 8, 16, 32, 64, 128 };
-        _shuntResistor = 1;
+        _CorGains = new double[] { _configFile.searchDouble("GainCurrent0"), _configFile.searchDouble("GainCurrent1"),
+                _configFile.searchDouble("GainCurrent2"), _configFile.searchDouble("GainCurrent3"),
+                _configFile.searchDouble("GainCurrent4"), _configFile.searchDouble("GainCurrent5"),
+                _configFile.searchDouble("GainCurrent6"), _configFile.searchDouble("GainCurrent7") };
 
+        _shuntResistor = _configFile.searchDouble("ShuntResistorAMP");
         _state = MoiraState.DirectCoupled;
     }
 
@@ -226,6 +291,10 @@ public class Moira extends AnalogDiscovery2 {
     public double setGain(int index) {
         _MuxPGA.selectLine(index);
         return getCurrentGainPGA();
+    }
+
+    public void setGroundResistor(int index) {
+        _MuxGR.selectLine(index);
     }
 
     private class muxMAX338 {

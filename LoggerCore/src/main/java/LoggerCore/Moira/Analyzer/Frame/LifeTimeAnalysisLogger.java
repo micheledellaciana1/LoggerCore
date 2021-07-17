@@ -5,6 +5,7 @@ import java.awt.event.*;
 import javax.swing.AbstractAction;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
+import javax.swing.JTextField;
 
 import LoggerCore.LoggerFrame;
 import LoggerCore.LoggerFrameMinimal;
@@ -18,6 +19,8 @@ public class LifeTimeAnalysisLogger extends LoggerFrameMinimal {
     protected VoltageMonitor _vm;
     protected LifeTimeAnalysis _lifeTimeAnalysis;
     protected JCheckBoxMenuItem _runningCheckBox;
+    protected JTextField _Tstart;
+    protected JTextField _TFinish;
 
     public LifeTimeAnalysisLogger(Moira moira, VoltageMonitor vm) {
         super(false, false, true, false);
@@ -30,7 +33,13 @@ public class LifeTimeAnalysisLogger extends LoggerFrameMinimal {
         _runningCheckBox = BuildRunAnalyzerCheckBoxItem();
         getJMenuBar().add(_runningCheckBox);
 
-        addXYSeries(_lifeTimeAnalysis.getSeries(), "Time[S]", "Life time[S]");
+        _Tstart = BuildTextFieldLowerLimit();
+        getJMenuBar().add(_Tstart);
+
+        _TFinish = BuildTextFieldUpperLimit();
+        getJMenuBar().add(_TFinish);
+
+        addXYSeries(_lifeTimeAnalysis.getSeries(), "Time[S]", "Life time / Temperature [us]/[K]");
 
         DisplayXYSeries(_lifeTimeAnalysis.getSeries());
 
@@ -71,5 +80,45 @@ public class LifeTimeAnalysisLogger extends LoggerFrameMinimal {
             }
         });
         return runningCheckBox;
+    }
+
+    private JTextField BuildTextFieldLowerLimit() {
+        final JTextField Tstart = new JTextField("Lower Limit");
+        Tstart.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if (e.getKeyCode() == 10)
+                    _lifeTimeAnalysis.set_TimeStart(Double.valueOf(Tstart.getText()));
+            }
+        });
+
+        Tstart.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                _lifeTimeAnalysis.set_TimeStart(Double.valueOf(Tstart.getText()));
+            }
+        });
+
+        return Tstart;
+    }
+
+    private JTextField BuildTextFieldUpperLimit() {
+        final JTextField TFinish = new JTextField("Upper Limit");
+        TFinish.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if (e.getKeyCode() == 10)
+                    _lifeTimeAnalysis.set_TimeFinish(Double.valueOf(TFinish.getText()));
+            }
+        });
+
+        TFinish.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                _lifeTimeAnalysis.set_TimeFinish(Double.valueOf(TFinish.getText()));
+            }
+        });
+
+        return TFinish;
     }
 }

@@ -59,13 +59,11 @@ public class ZefiroApp extends LoggerFrame {
 
                 setTitle("Zefiro2");
 
-                _configFile = new Configuration("ZefiroConfig", System.getProperty("user.dir") + "\\config.txt");
+                // _configFile = new Configuration("ZefiroConfig",
+                // System.getProperty("user.dir") + "\\config.txt");
 
-                /*
-                 * _configFile = new Configuration("ZefiroConfig",
-                 * "C:\\Users\\utente\\Documents\\Visual Studio 2019\\projects\\LoggerCore\\LoggerCore_gui\\LoggerCore\\src\\main\\java\\LoggerCore\\Zefiro\\config.txt"
-                 * );
-                 */
+                _configFile = new Configuration("ZefiroConfig",
+                                "C:\\Users\\utente\\Documents\\Visual Studio 2019\\projects\\LoggerCore\\LoggerCore_gui\\LoggerCore\\src\\main\\java\\LoggerCore\\Zefiro\\config.txt");
 
                 AutosaveRunnable.getInstance().setAutosavePath(new File(_configFile.search("AutosavePath")));
                 int AutosavePeriod = _configFile.searchInteger("AutosavePeriodSec") * 1000;
@@ -255,6 +253,14 @@ public class ZefiroApp extends LoggerFrame {
                 routinePotential.add(routinePotential.BuildStopRoutineItem());
                 mr.add(routinePotential);
 
+                MenuRoutine routineLED = new MenuRoutine("Routine PhotoActivation");
+                String DefILEDIChArgs = _configFile.search("DefILEDIChArgs");
+                routineLED.add(routineLED.BuildStringRoutineItem("ILEDICharacteristic", new ILEDICharacteristic(_zef),
+                                "Enter: <mA LED start> <mA LED Stop> <mA step> <NCycle> <Up&Down> <delay>",
+                                DefILEDIChArgs));
+                routineLED.add(routineLED.BuildStopRoutineItem());
+                mr.add(routineLED);
+
                 MenuRoutine routineDebug = new MenuRoutine("Routine debug");
                 routineDebug.add(routineDebug.BuildStringRoutineItem("Fast Channel Monitor",
                                 new FastChannelMonitor(_zef), "Enter: <AnalogChannel> <NPoints>", "31 1000"));
@@ -292,6 +298,9 @@ public class ZefiroApp extends LoggerFrame {
                 _tm.add(_heaterMonitor);
                 _tm.add(_ChamberMonitor);
                 _tm.add(_LEDcurrentMonitor);
+
+                Thread threadHeaterFeedback = new Thread(_heaterMonitor.get_feedbackRunnable());
+                threadHeaterFeedback.start();
 
                 addToAutosave("ZefiroMonitor");
 

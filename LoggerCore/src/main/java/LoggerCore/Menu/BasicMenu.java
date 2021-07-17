@@ -84,7 +84,7 @@ public abstract class BasicMenu extends JMenu {
     }
 
     public JMenuItem BuildSliderMenuItem(final String name, double min, double max, double initialValue,
-            DoubleJSliderChangeListener listener) {
+            final DoubleJSliderChangeListener listener) {
 
         final JFrame frame = new JFrame(name);
         JPanel pane = new JPanel();
@@ -102,25 +102,18 @@ public abstract class BasicMenu extends JMenu {
         slider.setPreferredSize(new Dimension(200, 30));
 
         final JTextField textField = new JTextField(Double.toString(initialValue));
-        textField.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                slider.setValue(Double.parseDouble(textField.getText()));
-            }
-        });
-
         slider.addChangeListener(new DoubleJSliderChangeListener() {
             @Override
             public void valueChanged(double valueSlider) {
                 textField.setText(Double.toString(valueSlider));
             }
         });
-
         textField.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
                 if (e.getKeyCode() == 10) {
-                    JTextField textField = JTextField.class.cast(e.getSource());
+                    slider.setValue(Double.valueOf(textField.getText()));
+                    listener.valueChanged(slider.getDoubleValue());
                     if (_logAction)
                         _logBook.log(slider.getName() + ": " + textField.getText());
                 }
@@ -158,7 +151,8 @@ public abstract class BasicMenu extends JMenu {
     }
 
     public JMenuItem BuildNSliderMenuItem(final String name, ArrayList<String> names, ArrayList<Double> mins,
-            ArrayList<Double> maxs, ArrayList<Double> initialValues, ArrayList<DoubleJSliderChangeListener> listeners) {
+            ArrayList<Double> maxs, ArrayList<Double> initialValues,
+            final ArrayList<DoubleJSliderChangeListener> listeners) {
 
         final JFrame frame = new JFrame(name);
 
@@ -167,6 +161,7 @@ public abstract class BasicMenu extends JMenu {
         pane.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
 
         for (int i = 0; i < names.size(); i++) {
+            final DoubleJSliderChangeListener listener = listeners.get(i);
             final DoubleJSlider slider = new DoubleJSlider(mins.get(i), maxs.get(i), 10000000, initialValues.get(i));
 
             slider.setName(names.get(i));
@@ -178,13 +173,6 @@ public abstract class BasicMenu extends JMenu {
             slider.setPreferredSize(new Dimension(200, 30));
 
             final JTextField textField = new JTextField(Double.toString(initialValues.get(i)));
-            textField.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    slider.setValue(Double.parseDouble(textField.getText()));
-                }
-            });
-
             slider.addChangeListener(new DoubleJSliderChangeListener() {
                 @Override
                 public void valueChanged(double valueSlider) {
@@ -196,12 +184,14 @@ public abstract class BasicMenu extends JMenu {
                 @Override
                 public void keyReleased(KeyEvent e) {
                     if (e.getKeyCode() == 10) {
-                        JTextField textField = JTextField.class.cast(e.getSource());
+                        slider.setValue(Double.parseDouble(textField.getText()));
+                        listener.valueChanged(slider.getDoubleValue());
                         if (_logAction)
                             _logBook.log(slider.getName() + ": " + textField.getText());
                     }
                 }
             });
+
             slider.addMouseListener(new MouseInputAdapter() {
                 @Override
                 public void mouseReleased(MouseEvent e) {
@@ -211,7 +201,7 @@ public abstract class BasicMenu extends JMenu {
                 }
             });
 
-            slider.addChangeListener(listeners.get(i));
+            slider.addChangeListener(listener);
 
             pane.add(new JLabel(names.get(i) + ": " + slider.get_min() + " - " + slider.get_max()));
             pane.add(Box.createRigidArea(new Dimension(0, 5)));

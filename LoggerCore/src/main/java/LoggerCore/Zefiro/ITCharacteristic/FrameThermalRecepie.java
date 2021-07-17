@@ -46,23 +46,24 @@ public class FrameThermalRecepie extends LoggerFrame {
         AbstractAction action = new AbstractAction("Run recepie") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (_runningCheckBox.isSelected()) {
-                    try {
-                        _indexPath = 0;
-                        if (_ThermalCook.getisRunning())
-                            return;
-                        else {
-                            _start = System.currentTimeMillis();
-                            Thread t = new Thread(_ThermalCook);
-                            t.start();
+                if (getDisplayedDataset().getSeriesCount() > 0)
+                    if (_runningCheckBox.isSelected()) {
+                        try {
+                            _indexPath = 0;
+                            if (_ThermalCook.getisRunning())
+                                return;
+                            else {
+                                _start = System.currentTimeMillis();
+                                Thread t = new Thread(_ThermalCook);
+                                t.start();
+                            }
+                        } catch (Exception _e) {
+                            _e.printStackTrace();
                         }
-                    } catch (Exception _e) {
-                        _e.printStackTrace();
+                    } else {
+                        while (_ThermalCook.getisRunning())
+                            _ThermalCook.kill();
                     }
-                } else {
-                    while (_ThermalCook.getisRunning())
-                        _ThermalCook.kill();
-                }
             }
         };
 

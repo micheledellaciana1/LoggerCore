@@ -4,10 +4,12 @@ C:\Users\utente\Documents\Visual Studio 2019\projects\LoggerCore\LoggerCore_gui\
 C:\Users\utente\Documents\Visual Studio 2019\projects\LoggerCore\LoggerCore_gui\LoggerCore\src\main\java\LoggerCore\Moira\AnalogDiscovery2.java
 C:\Users\utente\Documents\Visual Studio 2019\projects\LoggerCore\LoggerCore_gui\LoggerCore\src\main\java\LoggerCore\Communication\Command.java
 C:\Users\utente\Documents\Visual Studio 2019\projects\LoggerCore\LoggerCore_gui\LoggerCore\src\main\java\LoggerCore\Menu\MenuFeedBackController.java
+C:\Users\utente\Documents\Visual Studio 2019\projects\LoggerCore\LoggerCore_gui\LoggerCore\src\main\java\LoggerCore\Zefiro\HeaterTemperatureFeedBack.java
 C:\Users\utente\Documents\Visual Studio 2019\projects\LoggerCore\LoggerCore_gui\LoggerCore\src\main\java\LoggerCore\Communication\SerialDevice.java
 C:\Users\utente\Documents\Visual Studio 2019\projects\LoggerCore\LoggerCore_gui\LoggerCore\src\main\java\LoggerCore\LoggerFrame.java
 C:\Users\utente\Documents\Visual Studio 2019\projects\LoggerCore\LoggerCore_gui\LoggerCore\src\main\java\LoggerCore\Zefiro\WatchDog\ChamberTempDog.java
 C:\Users\utente\Documents\Visual Studio 2019\projects\LoggerCore\LoggerCore_gui\LoggerCore\src\main\java\LoggerCore\Moira\dwf_extended.java
+C:\Users\utente\Documents\Visual Studio 2019\projects\LoggerCore\LoggerCore_gui\LoggerCore\src\main\java\LoggerCore\Moira\TriggerFrame.java
 C:\Users\utente\Documents\Visual Studio 2019\projects\LoggerCore\LoggerCore_gui\LoggerCore\src\main\java\LoggerCore\Communication\Device.java
 C:\Users\utente\Documents\Visual Studio 2019\projects\LoggerCore\LoggerCore_gui\LoggerCore\src\main\java\LoggerCore\Moira\MoiraApp.java
 C:\Users\utente\Documents\Visual Studio 2019\projects\LoggerCore\LoggerCore_gui\LoggerCore\src\main\java\LoggerCore\Moira\rouintes\IVCharacteristic.java
@@ -23,6 +25,7 @@ C:\Users\utente\Documents\Visual Studio 2019\projects\LoggerCore\LoggerCore_gui\
 C:\Users\utente\Documents\Visual Studio 2019\projects\LoggerCore\LoggerCore_gui\LoggerCore\src\main\java\LoggerCore\DataManager.java
 C:\Users\utente\Documents\Visual Studio 2019\projects\LoggerCore\LoggerCore_gui\LoggerCore\src\main\java\LoggerCore\Moira\Analyzer\Frame\HarmonicAnalyzerLogger.java
 C:\Users\utente\Documents\Visual Studio 2019\projects\LoggerCore\LoggerCore_gui\LoggerCore\src\main\java\LoggerCore\Configuration.java
+C:\Users\utente\Documents\Visual Studio 2019\projects\LoggerCore\LoggerCore_gui\LoggerCore\src\main\java\LoggerCore\Zefiro\ILEDICharacteristic.java
 C:\Users\utente\Documents\Visual Studio 2019\projects\LoggerCore\LoggerCore_gui\LoggerCore\src\main\java\LoggerCore\Zefiro\ITCharacteristic\TemperatureWithTimer.java
 C:\Users\utente\Documents\Visual Studio 2019\projects\LoggerCore\LoggerCore_gui\LoggerCore\src\main\java\LoggerCore\Zefiro\HeaterCalibration\HeaterCalibration.java
 C:\Users\utente\Documents\Visual Studio 2019\projects\LoggerCore\LoggerCore_gui\LoggerCore\src\main\java\LoggerCore\GlobalVar.java
@@ -101,3 +104,4 @@ C:\Users\utente\Documents\Visual Studio 2019\projects\LoggerCore\LoggerCore_gui\
 C:\Users\utente\Documents\Visual Studio 2019\projects\LoggerCore\LoggerCore_gui\LoggerCore\src\main\java\LoggerCore\Icaro\FastChannelMonitor\FastChannelMonitor.java
 C:\Users\utente\Documents\Visual Studio 2019\projects\LoggerCore\LoggerCore_gui\LoggerCore\src\main\java\LoggerCore\LinkedAnalysis.java
 C:\Users\utente\Documents\Visual Studio 2019\projects\LoggerCore\LoggerCore_gui\LoggerCore\src\main\java\LoggerCore\Zefiro\ZefiroApp.java
+C:\Users\utente\Documents\Visual Studio 2019\projects\LoggerCore\LoggerCore_gui\LoggerCore\src\main\java\LoggerCore\Moira\DCControlFrame.java

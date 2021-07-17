@@ -17,7 +17,7 @@ public class IVCharacteristic extends LoggerFrameSweep {
     JMenu analysisMenu;
 
     public IVCharacteristic(Moira moira) {
-        super("IVCharacteristic", "Voltage[V]", "Current[mA]");
+        super("IVCharacteristic", "Voltage[V]", "Current[A]");
         _moira = moira;
 
         LinearFitFrame LFF = new LinearFitFrame(_AnalysisLinkedToSweep);
@@ -38,7 +38,12 @@ public class IVCharacteristic extends LoggerFrameSweep {
         double voltage = 0;
         double current = 0;
 
-        ArrayList<double[]> voltages = _moira.ReadOscilloscopeBothChannel();
+        ArrayList<double[]> voltages = null;
+
+        do {
+            voltages = _moira.ReadOscilloscopeBothChannel();
+        } while (voltages == null);
+
         voltage = Arrays.stream(voltages.get(0)).average().getAsDouble();
         current = _moira.convertToCurrent(Arrays.stream(voltages.get(1)).average().getAsDouble());
 
@@ -49,10 +54,12 @@ public class IVCharacteristic extends LoggerFrameSweep {
     public void sweepAction(double value) {
         switch (_moira.getMoiraState()) {
             case DirectCoupled:
-                _moira.setDCVoltage(0, _Path.get(_indexPath++));
+                if (_indexPath + 1 < _Path.size())
+                    _moira.setDCVoltage(0, _Path.get(_indexPath++));
                 break;
             case LEDCoupled:
-                _moira.setDCVoltage(1, _Path.get(_indexPath++));
+                if (_indexPath + 1 < _Path.size())
+                    _moira.setDCVoltage(1, _Path.get(_indexPath++));
                 break;
             default:
                 break;

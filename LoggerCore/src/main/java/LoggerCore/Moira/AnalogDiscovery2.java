@@ -92,6 +92,20 @@ public class AnalogDiscovery2 extends Device {
                     return false;
                 }
             }
+
+            @Override
+            protected Object executeSimulation(Object arg) {
+                double timeBase = Double.valueOf((String) arg);
+                int bufferSize = 1024;
+                double desiredFrequency = bufferSize / timeBase;
+                int scaleFactor = (int) (1e8 / desiredFrequency);
+
+                double SampleFrequency;
+                SampleFrequency = 1e8 / scaleFactor;
+
+                _dwf.FDwfAnalogInFrequencySet(SampleFrequency);
+                return true;
+            }
         });
 
         _commands.add(new StringCommand("Read_oscilloscope_single_channel") {
@@ -132,6 +146,23 @@ public class AnalogDiscovery2 extends Device {
 
                 return values;
             }
+
+            @Override
+            protected Object executeSimulation(Object arg) {
+                double[] values0 = new double[1000];
+                double[] values1 = new double[1000];
+
+                for (int i = 0; i < values0.length; i++) {
+                    values0[i] = Math.random();
+                    values1[i] = Math.random();
+                }
+
+                ArrayList<double[]> values = new ArrayList<double[]>();
+                values.add(values0);
+                values.add(values1);
+
+                return values;
+            }
         });
 
         _commands.add(new StringCommand("Set_oscilloscope_trigger") {
@@ -154,6 +185,11 @@ public class AnalogDiscovery2 extends Device {
 
                 return _dwf.setTriggerAnalogIn(TriggerChannel, TriggerLevel, TriggerPosSec, TriggerCondition,
                         TimeoutSec);
+            }
+
+            @Override
+            protected Object executeSimulation(Object arg) {
+                return true;
             }
         });
 
@@ -235,7 +271,7 @@ public class AnalogDiscovery2 extends Device {
                 try {
                     String args[] = arg.split(" ");
                     int idxChannel = Integer.valueOf(args[0]);
-                    double value = Integer.valueOf(args[1]);
+                    double value = Double.valueOf(args[1]);
 
                     return _dwf.setPowerSupply(idxChannel, value);
                 } catch (Exception e) {

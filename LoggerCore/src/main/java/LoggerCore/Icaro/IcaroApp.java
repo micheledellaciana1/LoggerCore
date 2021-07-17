@@ -19,6 +19,7 @@ import LoggerCore.*;
 import LoggerCore.Icaro.FastChannelMonitor.FastChannelMonitor;
 import LoggerCore.Icaro.ThermistorLUT.PT100;
 import LoggerCore.Menu.*;
+import LoggerCore.Zefiro.ITCharacteristic.FrameThermalRecepie;
 import LoggerCore.themal.*;
 
 public class IcaroApp extends LoggerFrame {
@@ -27,16 +28,20 @@ public class IcaroApp extends LoggerFrame {
     private Configuration _configFile;
     private FeedBackController_type2 _feedBackController;
     private HeaterTemperatureMonitor _heaterMonitor;
+    private ThreadManager _tm;
 
     public IcaroApp() {
         super();
         setTitle("Icaro2");
 
-        // _configFile = new Configuration("ZefiroConfig",
-        // System.getProperty("user.dir") + "\\config.txt");
+        _tm = new ThreadManager();
 
-        _configFile = new Configuration("IcaroConfig",
-                "C:\\Users\\utente\\Documents\\Visual Studio 2019\\projects\\LoggerCore\\LoggerCore_gui\\LoggerCore\\src\\main\\java\\LoggerCore\\Icaro\\config.txt");
+        _configFile = new Configuration("IcaroConfig", System.getProperty("user.dir") + "\\config.txt");
+
+        // _configFile = new Configuration("IcaroConfig",
+        // "C:\\Users\\utente\\Documents\\Visual Studio
+        // 2019\\projects\\LoggerCore\\LoggerCore_gui\\LoggerCore\\src\\main\\java\\LoggerCore\\Icaro\\config.txt"
+        // );
 
         AutosaveRunnable.getInstance().setAutosavePath(new File(_configFile.search("AutosavePath")));
         int AutosavePeriod = Integer.valueOf(_configFile.search("AutosavePeriodSec")) * 1000;
@@ -46,7 +51,13 @@ public class IcaroApp extends LoggerFrame {
         if (isASimulation)
             _ica = new Icaro("Icaro", null, null);
         else
-            _ica = new Icaro("Icaro", PT100.instance, SerialPort.getCommPorts()[0]);
+            try {
+                _ica = new Icaro("Icaro", PT100.instance,
+                        SerialPort.getCommPorts()[_configFile.searchInteger("PortIndex")]);
+            } catch (Exception e) {
+                System.exit(0);
+                System.out.println("Fatal error: wrong port");
+            }
 
         _ica.isASimulation = isASimulation;
         _ica.executeCommand("Open", null);
@@ -85,20 +96,20 @@ public class IcaroApp extends LoggerFrame {
         _heaterMonitor = new HeaterTemperatureMonitor(_ica, _feedBackController, "Heater temperature", "Heater voltage",
                 "Target temperature");
         _heaterMonitor.setExecutionDelay(Integer.valueOf(_configFile.search("DelayHeaterAcq")));
-        Thread HeaterMonitorThread = new Thread(_heaterMonitor);
-        HeaterMonitorThread.start();
+        _heaterMonitor.setName("Heater Monitor");
+        _tm.add(_heaterMonitor);
 
         ChamberMonitor cm = new ChamberMonitor(_ica, "Chamber Temperature", "Chamber Relative Humidity");
         cm.setExecutionDelay(Integer.valueOf(_configFile.search("DelayChamberAcq")));
-        Thread cmThread = new Thread(cm);
-        cmThread.start();
+        cm.setName("Chamber Monitor");
+        _tm.add(cm);
 
         addXYSeries(_heaterMonitor.getTemperatureSeries(), "time[sec]", "Temperature[°C]");
         addXYSeries(_heaterMonitor.getVoltagetHeaterSeries(), "time[sec]", "Voltage[a.u]");
 
         BoardTemperature btm = new BoardTemperature("Board Temperature", _ica);
-        Thread BoardTemperatureT = new Thread(btm);
-        BoardTemperatureT.start();
+        btm.setName("Board Temperature Monitor");
+        _tm.add(btm);
 
         addXYSeries(_heaterMonitor.getTargetTemperatureSeries(), "time[sec]", "Temperature[°C]");
 
@@ -132,17 +143,24 @@ public class IcaroApp extends LoggerFrame {
 
         subMenuGeneral.add(subMenuSetAcq);
         DeviceMenu.add(subMenuGeneral);
-        subMenuSet.add(DeviceMenu.BuildStringCommandItem("Set voltage heater", "Enter: <VoltageHeater>", "0"));
+        subMenuSet.add(DeviceMenu.BuildSliderCommandItem("Set voltage heater", "Set voltage heater", 0, 3.3, 0));
+        subMenuSet.add(DeviceMenu.BuildSliderCommandItem("Set DAC Pt100 Voltage", "Set_DAC_Pt100_Voltage", 0, 3.3, 0));
         DeviceMenu.add(subMenuSet);
         DeviceMenu.add(menuFeedback);
         DeviceMenu.add(DeviceMenu.BuildDeviceMonitorFrame("Icaro status", "Icaro status"));
 
         MenuRoutine mr = new MenuRoutine("Routine");
+
+        JMenu menuRecepie = new JMenu("Recepies");
+        FrameThermalRecepie ftr = new FrameThermalRecepie(_feedBackController);
+        menuRecepie.add(ftr.BuildDisplayFrameMenuItem("Open thermal recepie frame"));
+        mr.add(menuRecepie);
+
         String DefTemperatureRamp = _configFile.search("DefTemperatureRamp");
         mr.add(mr.BuildStringRoutineItem("Temperature ramp", new TemperatureRamp(_feedBackController),
                 "Enter: <TStart> <TStop> <TStep> <NCycle> <Up&Down> <delay>", DefTemperatureRamp));
         mr.add(mr.BuildStringRoutineItem("Fast channel monitor", new FastChannelMonitor(_ica),
-                "Enter: <AnalogChannel> <NPoints>", "15 1000"));
+                "Enter: <AnalogChannel> <NPoints> [19 Sample temperature signal]", "19 1000"));
         mr.add(mr.BuildStopRoutineItem());
 
         MenuLoggerFrameExportTxtFile menuExport = new MenuLoggerFrameExportTxtFile(this, "Export .txt");
@@ -156,6 +174,7 @@ public class IcaroApp extends LoggerFrame {
         MenuLoggerFrameFile menuFile = new MenuLoggerFrameFile(this, "file");
         menuFile.add(menuFile.BuildPropertyChartMenu(true));
         menuFile.add(menuExport);
+        menuFile.add(menuFile.BuildThreadManagerItem("Running threads", _tm));
         menuFile.add(menuFile.BuildEraseSeriesDataItem("Delete data", true));
         menuFile.add(menuFile.BuildDuplicateItem(true));
 
@@ -173,10 +192,10 @@ public class IcaroApp extends LoggerFrame {
 
         if (Boolean.valueOf(app._configFile.search("Autosave"))) {
             AutosaveRunnable.getInstance().addDataset(app, "IcaroMonitor");
-            Thread AutosaveThread = new Thread(AutosaveRunnable.getInstance());
-            AutosaveThread.start();
+            app._tm.add(AutosaveRunnable.getInstance());
         }
 
+        app._tm.runAll();
         app.setVisible(true);
         app.DisplayXYSeries(app._heaterMonitor.getTemperatureSeries());
     }

@@ -29,12 +29,13 @@ public class MoiraApp extends LoggerFrame {
         }
 
         public static void main(String[] args) {
-                Moira _moira = new Moira(false);
 
                 ThreadManager _tm = new ThreadManager();
 
                 Configuration _configFile = new Configuration("MoiraConfig",
                                 "C:\\Users\\utente\\Documents\\Visual Studio 2019\\projects\\LoggerCore\\LoggerCore_gui\\LoggerCore\\src\\main\\java\\LoggerCore\\Moira\\config.txt");
+
+                Moira _moira = new Moira(_configFile);
 
                 _moira.isASimulation = _configFile.searchBoolean("Simulate");
                 _moira.executeCommand("Open", null);
@@ -63,6 +64,7 @@ public class MoiraApp extends LoggerFrame {
                 DisplayMenu.addMenuListener(DisplayMenu.BuildDefaultMenuListener());
 
                 MenuDevice DeviceMenu = new MenuDevice("Set", _moira);
+
                 JMenu AnalogDiscoveryMenu = new JMenu("AnalogDiscovery2");
 
                 AnalogDiscoveryMenu.add(DeviceMenu.BuildStringCommandItem("Set time Base", "Set_time_base",
@@ -74,17 +76,25 @@ public class MoiraApp extends LoggerFrame {
                                 "0 1 1e5 1 0 50"));
                 AnalogDiscoveryMenu.add(DeviceMenu.BuildStringCommandItem("Stop waveform", "Stop_wave",
                                 "Enter: <ChannelIdx>", "0"));
-                AnalogDiscoveryMenu.add(DeviceMenu.BuildStringCommandItem("Set oscilloscope trigger",
-                                "Set_oscilloscope_trigger",
-                                "Enter: <SourceChannel> <TriggerLevel> <PosTriggerSec> <TriggerCondition:0/Rising, 1/Falling> <TimeoutSec>",
-                                "0 0 0 0 0"));
                 AnalogDiscoveryMenu.add(DeviceMenu.BuildStringCommandItem("Set power supply", "Set_power_supply",
                                 "Enter: <IdxChannel> <Value>", "0 0"));
-                AnalogDiscoveryMenu.add(DeviceMenu.BuildNoArgCommandItem("Stop oscilloscope trigger",
-                                "Stop_oscilloscope_trigger"));
+
                 DeviceMenu.add(AnalogDiscoveryMenu);
-                DeviceMenu.add(DeviceMenu.BuildStringCommandItem("Set current Gain Idx", "Set_current_gain",
-                                "Enter: <GainIdX>", "0"));
+
+                /*
+                 * DeviceMenu.add(DeviceMenu.BuildStringCommandItem("Set current Gain Idx",
+                 * "Set_current_gain", "Enter: <GainIdX>", "0"));
+                 * DeviceMenu.add(DeviceMenu.BuildStringCommandItem("Set shunt resistor Idx",
+                 * "Set_shunt_resistor", "Enter: <GainIdX>", "0"));
+                 */
+
+                DeviceMenu.add(DeviceMenu.BuildStringCommandItem("Set time Base", "Set_time_base",
+                                "Enter: <TimeBase[sec]>", "1e-3"));
+                DeviceMenu.add(DeviceMenu.BuildStringCommandItem("Calibrate offsets", "Init_offsets", "Enter: <null>",
+                                "null"));
+                DeviceMenu.add(TriggerFrame.BuildMenuItem("TriggerFrame", _moira));
+                DeviceMenu.add(DCControlFrame.BuildMenuItem("DCControlFrame", _moira));
+
                 DeviceMenu.add(DeviceMenu.BuildStringCommandItem("Connect DUT", "Set_switch",
                                 "Enter: <Status:1/Connected, 0/Disconneted>", "0"));
                 DeviceMenu.add(DeviceMenu.BuildDeviceMonitorFrame("Moira status", "Moira status"));

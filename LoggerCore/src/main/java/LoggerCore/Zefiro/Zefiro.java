@@ -312,6 +312,10 @@ public class Zefiro extends SerialDevice {
         executeCommand("Setcurrentheater", Double.toString(current));
     }
 
+    public void setCurrentLED(double currentLED) {
+        executeCommand("Set_current_LED", Double.toString(currentLED));
+    }
+
     public double getResistanceHeater() {
         double resistance = Double.class.cast(executeCommand("ReadHeaterResistance", null));
         return resistance;
@@ -331,6 +335,10 @@ public class Zefiro extends SerialDevice {
 
     public double getCurrentHeater() {
         return _CurrentHeater;
+    }
+
+    public double get_CurrentLED() {
+        return _CurrentOutpu2;
     }
 
     public void set_LUTHeater(LookUpTable _LUTHeater) {

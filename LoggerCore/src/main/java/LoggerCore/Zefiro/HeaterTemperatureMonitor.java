@@ -12,7 +12,7 @@ import LoggerCore.themal.IFeedbackController;
 public class HeaterTemperatureMonitor extends PointsStream {
 
     protected Zefiro _zef;
-    protected IFeedbackController _feedBackController;
+    protected HeaterTemperatureFeedBack _feedbackRunnable;
     protected LinkedPointAnalysis _currentHeater;
     protected LinkedPointAnalysis _targetTemperature;
 
@@ -20,16 +20,13 @@ public class HeaterTemperatureMonitor extends PointsStream {
             Comparable<?> KeyCurrentHeater, Comparable<?> KeyTargetTemperature) {
         super(KeyTemperature);
         _zef = zef;
-        _feedBackController = feedBackController;
-        _feedBackController.setFeedbackON(true);
 
+        _feedbackRunnable = new HeaterTemperatureFeedBack(zef, feedBackController);
+        _feedbackRunnable.setExecutionDelay(100);
         _currentHeater = new LinkedPointAnalysis(KeyCurrentHeater) {
             @Override
             public Point2D ExecutePointAnalysis(Object newData) {
                 Point2D temperature = Point2D.Double.class.cast(newData);
-                double responce = _feedBackController.responce(temperature.getY(), _zef.getCurrentHeater());
-                _zef.executeCommand("Set current heater", Double.toString(responce));
-
                 return new Point2D.Double(temperature.getX(), _zef.getCurrentHeater());
             }
         };
@@ -38,7 +35,7 @@ public class HeaterTemperatureMonitor extends PointsStream {
             @Override
             public Point2D ExecutePointAnalysis(Object newData) {
                 Point2D temperature = Point2D.Double.class.cast(newData);
-                return new Point2D.Double(temperature.getX(), _feedBackController.getTarget());
+                return new Point2D.Double(temperature.getX(), _feedbackRunnable._feedBackController.getTarget());
             }
         };
 
@@ -61,11 +58,15 @@ public class HeaterTemperatureMonitor extends PointsStream {
         return _currentHeater.getSeries();
     }
 
+    public XYSeries getTargetTemperatureSeries() {
+        return _targetTemperature.getSeries();
+    }
+
     public XYSeries getTemperatureSeries() {
         return getSeries();
     }
 
-    public XYSeries getTargetTemperatureSeries() {
-        return _targetTemperature.getSeries();
+    public HeaterTemperatureFeedBack get_feedbackRunnable() {
+        return _feedbackRunnable;
     }
 }

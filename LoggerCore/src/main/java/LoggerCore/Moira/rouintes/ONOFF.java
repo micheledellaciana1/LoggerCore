@@ -11,7 +11,7 @@ public class ONOFF extends StoppableRunnable {
         super();
         _moira = moira;
 
-        _ExecutionDelay = 100;
+        _ExecutionDelay = 25;
         _ExecutionDelay2 = 100;
 
         _firstDelay = true;
@@ -31,10 +31,12 @@ public class ONOFF extends StoppableRunnable {
     @Override
     public void StartLoop() {
         _moira.SetSwitch(true);
+        // _moira.setDCVoltage(0, 0);
     }
 
     @Override
     public void MiddleLoop() {
         _moira.SetSwitch(false);
+        // _moira.setDCVoltage(0, 2);
     }
 }

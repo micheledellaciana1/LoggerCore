@@ -12,6 +12,7 @@ public class BoardTemperature extends PointsStream {
     public BoardTemperature(Comparable<?> KeySeries, Icaro ica) {
         super(KeySeries);
         _ica = ica;
+        setExecutionDelay(1000);
     }
 
     @Override

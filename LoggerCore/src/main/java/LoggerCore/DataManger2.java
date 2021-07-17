@@ -24,6 +24,10 @@ public class DataManger2 {
         _format = format;
     }
 
+    public DataManger2() {
+        _format = GlobalVar.defaulFormat;
+    }
+
     public CSVParser loadData(File file) {
         try {
             return CSVParser.parse(file, Charset.defaultCharset(), _format);
